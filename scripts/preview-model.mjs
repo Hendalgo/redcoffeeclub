@@ -1,0 +1,13 @@
+import { chromium } from '@playwright/test';
+import { mkdir } from 'node:fs/promises';
+await mkdir('tmp/qa',{recursive:true});
+const browser=await chromium.launch({headless:true,channel:'msedge',args:['--enable-webgl','--use-gl=angle','--use-angle=swiftshader','--no-sandbox']});
+const page=await browser.newPage({viewport:{width:1440,height:1000},deviceScaleFactor:1});
+page.on('pageerror',e=>console.log('PAGE ERROR',e.message));
+await page.goto('http://127.0.0.1:4321',{waitUntil:'networkidle'});
+await page.waitForSelector('[data-scene="explore"].is-ready');
+await page.screenshot({path:'tmp/qa/model-assembled.png'});
+await page.evaluate(()=>window.scrollTo(0,window.__aeroScroll.end));await page.waitForTimeout(1500);
+await page.screenshot({path:'tmp/qa/model-exploded.png'});
+console.log(await page.evaluate(()=>window.__aeroState));
+await browser.close();

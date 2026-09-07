@@ -1,0 +1,31 @@
+/* Independent entrance layers keep the scroll choreography reversible. */
+.hero-landscape-reveal{position:absolute;inset:0;z-index:-3;transform-origin:66% 60%;pointer-events:none}
+.experience.is-enhanced .hero-landscape-reveal{z-index:0}
+.hero-landscape-reveal .hero-landscape{z-index:0}
+.title-line{perspective:900px}.hero-handwriting>span{display:block}
+
+.hero-scroll,.experience.is-enhanced .hero-scroll{display:block;bottom:32px;width:max-content;max-width:calc(100% - 48px);padding:8px 0;text-transform:none;letter-spacing:0}
+.hero-scroll>.hero-scroll-inner{display:flex;align-items:center;gap:24px;font-size:14px}
+.hero-scroll-copy{display:flex;flex-direction:column;gap:8px}
+.hero-scroll-copy b{font-size:14px;font-weight:500;letter-spacing:.015em}
+.hero-scroll .hero-scroll-copy small{margin:0;font-size:9px;letter-spacing:.08em;color:#eee5d7;opacity:.7;text-transform:none}
+.hero-scroll-track{position:relative;display:grid;place-items:center;width:32px;height:52px;overflow:hidden;border-left:1px solid #eee5d733;border-right:1px solid #eee5d733}
+.hero-scroll-track svg{width:24px;height:48px;stroke-width:1;transition:transform .8s cubic-bezier(.22,1,.36,1)}
+.hero-scroll:hover .hero-scroll-track svg{transform:translateY(6px)}
+.hero-scroll-copy b::after{content:'';display:block;height:1px;margin-top:5px;background:currentColor;transform:scaleX(0);transform-origin:left;transition:transform .7s cubic-bezier(.22,1,.36,1)}
+.hero-scroll:hover .hero-scroll-copy b::after{transform:scaleX(1)}
+html[data-hero-entrance="playing"] .hero-scroll-track svg{animation:hero-invitation 1.7s cubic-bezier(.4,0,.2,1) 1.2s 2}
+@keyframes hero-invitation{0%,100%{transform:translateY(0)}50%{transform:translateY(7px)}}
+/* Preserve the supplied artwork and alpha silhouette; white is a web treatment. */
+img[src="/images/hidra-logo.png"]{filter:brightness(0) invert(1)}
+.hidra-credit{padding-bottom:32px}
+@media(max-width:760px){
+ .hero-scroll,.experience.is-enhanced .hero-scroll{bottom:20px}
+ .hero-scroll>.hero-scroll-inner{gap:20px}.hero-scroll-copy b{font-size:12px}
+ .hero-scroll .hero-scroll-copy small{font-size:8px}.hero-scroll-track{height:44px;width:28px}.hero-scroll-track svg{height:40px}
+}
+@media(orientation:landscape) and (max-height:550px){
+ .hero-scroll,.experience.is-enhanced .hero-scroll{bottom:10px;right:4vw;left:auto;transform:none}
+ .hero-scroll-copy b{font-size:11px}.hero-scroll .hero-scroll-copy small{font-size:7px}.hero-scroll>.hero-scroll-inner{gap:16px}
+}
+@media(prefers-reduced-motion:reduce){.hero-scroll-track svg{animation:none!important;transition:none}.hero-scroll-copy b::after{transition:none}}

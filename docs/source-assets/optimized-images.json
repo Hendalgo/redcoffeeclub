@@ -1,0 +1,155 @@
+{
+  "margarita-coast": {
+    "width": 1536,
+    "height": 1024,
+    "variants": [
+      {
+        "src": "/optimized/margarita-coast-640.webp",
+        "width": 640,
+        "bytes": 19626
+      },
+      {
+        "src": "/optimized/margarita-coast-960.webp",
+        "width": 960,
+        "bytes": 38782
+      },
+      {
+        "src": "/optimized/margarita-coast-1536.webp",
+        "width": 1536,
+        "bytes": 94226
+      }
+    ]
+  },
+  "coffee-macro": {
+    "width": 1536,
+    "height": 1024,
+    "variants": [
+      {
+        "src": "/optimized/coffee-macro-640.webp",
+        "width": 640,
+        "bytes": 13258
+      },
+      {
+        "src": "/optimized/coffee-macro-960.webp",
+        "width": 960,
+        "bytes": 24276
+      },
+      {
+        "src": "/optimized/coffee-macro-1536.webp",
+        "width": 1536,
+        "bytes": 51880
+      }
+    ]
+  },
+  "coffee-botanical": {
+    "width": 700,
+    "height": 1050,
+    "variants": [
+      {
+        "src": "/optimized/coffee-botanical-420.webp",
+        "width": 420,
+        "bytes": 58754
+      },
+      {
+        "src": "/optimized/coffee-botanical-700.webp",
+        "width": 700,
+        "bytes": 143772
+      }
+    ]
+  },
+  "logo": {
+    "width": 319,
+    "height": 224,
+    "variants": [
+      {
+        "src": "/optimized/logo-160.webp",
+        "width": 160,
+        "bytes": 6792
+      },
+      {
+        "src": "/optimized/logo-240.webp",
+        "width": 240,
+        "bytes": 11674
+      },
+      {
+        "src": "/optimized/logo-319.webp",
+        "width": 319,
+        "bytes": 13818
+      }
+    ]
+  },
+  "flower": {
+    "width": 258,
+    "height": 233,
+    "variants": [
+      {
+        "src": "/optimized/flower-100.webp",
+        "width": 100,
+        "bytes": 5008
+      },
+      {
+        "src": "/optimized/flower-160.webp",
+        "width": 160,
+        "bytes": 9850
+      }
+    ]
+  },
+  "aeropress-assembled": {
+    "width": 720,
+    "height": 1000,
+    "variants": [
+      {
+        "src": "/optimized/aeropress-assembled-360.webp",
+        "width": 360,
+        "bytes": 13404
+      },
+      {
+        "src": "/optimized/aeropress-assembled-540.webp",
+        "width": 540,
+        "bytes": 22512
+      },
+      {
+        "src": "/optimized/aeropress-assembled-720.webp",
+        "width": 720,
+        "bytes": 30704
+      }
+    ]
+  },
+  "aeropress-exploded": {
+    "width": 720,
+    "height": 1000,
+    "variants": [
+      {
+        "src": "/optimized/aeropress-exploded-360.webp",
+        "width": 360,
+        "bytes": 8722
+      },
+      {
+        "src": "/optimized/aeropress-exploded-540.webp",
+        "width": 540,
+        "bytes": 15324
+      },
+      {
+        "src": "/optimized/aeropress-exploded-720.webp",
+        "width": 720,
+        "bytes": 20978
+      }
+    ]
+  },
+  "hidra-logo": {
+    "width": 1080,
+    "height": 301,
+    "variants": [
+      {
+        "src": "/optimized/hidra-logo-240.webp",
+        "width": 240,
+        "bytes": 6086
+      },
+      {
+        "src": "/optimized/hidra-logo-400.webp",
+        "width": 400,
+        "bytes": 9142
+      }
+    ]
+  }
+}

@@ -1,0 +1,6 @@
+# Preserve original media bytes and avoid textual diffs for binary assets.
+*.pdf binary
+*.glb binary
+*.png binary
+*.webp binary
+*.zip binary

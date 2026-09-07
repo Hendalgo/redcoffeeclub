@@ -1,0 +1,21 @@
+import {chromium} from '@playwright/test';
+import {writeFile} from 'node:fs/promises';
+const native=process.argv.includes('--native');
+const browser=await chromium.launch({headless:true,channel:'msedge',args:native?['--no-sandbox']:['--enable-webgl','--use-gl=angle','--use-angle=swiftshader','--no-sandbox']});
+const page=await browser.newPage({viewport:{width:1440,height:1000}});
+await page.goto('http://127.0.0.1:4321',{waitUntil:'networkidle'});await page.evaluate(()=>document.documentElement.style.scrollBehavior='auto');
+await page.waitForSelector('[data-scene="explore"].is-ready');await page.waitForTimeout(1000);
+await page.evaluate(()=>window.scrollTo(0,window.__aeroScroll.start));await page.waitForTimeout(800);
+const start=await page.evaluate(()=>({count:window.__aeroFrames.frames,time:performance.now(),scrollY,range:window.__aeroScroll,state:window.__aeroState}));
+console.log('start',JSON.stringify(start));
+const range=await page.evaluate(()=>window.__aeroScroll);
+const samples=[];
+for(let i=1;i<=40;i++){await page.evaluate(({range,i})=>window.scrollTo(0,range.start+(range.end-range.start)*i/40),{range,i});await page.waitForTimeout(60);if(i%10===0)samples.push(await page.evaluate(()=>({scrollY,frames:window.__aeroFrames.frames,progress:window.__aeroState.progress})));}
+const end=await page.evaluate(()=>({count:window.__aeroFrames.frames,time:performance.now(),state:window.__aeroState}));
+console.log('end',JSON.stringify(end));
+console.log('samples',JSON.stringify(samples));
+await page.waitForTimeout(1200);
+const quietStart=await page.evaluate(()=>window.__aeroFrames.frames);await page.waitForTimeout(700);const quietEnd=await page.evaluate(()=>window.__aeroFrames.frames);
+const renderer=await page.evaluate(()=>{const gl=document.querySelector('[data-scene="explore"] canvas').getContext('webgl2');const ext=gl.getExtension('WEBGL_debug_renderer_info');return ext?gl.getParameter(ext.UNMASKED_RENDERER_WEBGL):'unavailable';});
+const report={browser:browser.version(),viewport:'1440 × 1000',renderer,actualSceneFrames:end.count-start.count,elapsedMs:end.time-start.time,averageSceneFps:(end.count-start.count)/((end.time-start.time)/1000),idleFrames:quietEnd-quietStart,finalState:await page.evaluate(()=>window.__aeroState),note:'Local development server. Headless Edge, 40 automated scroll steps. Average includes protocol overhead and pauses; not a sustained frame-rate or real mobile GPU benchmark.'};
+await writeFile('tmp/qa/performance-'+(native?'native':'software')+'-report.json',JSON.stringify(report,null,2));console.log(JSON.stringify(report));await browser.close();

@@ -1,0 +1,85 @@
+/* Keep the first paint useful while optional motion initializes. */
+.is-loading .site-header,.is-loading main{opacity:1}
+.preloader{inset:0;height:100%;touch-action:pan-y;background:transparent}
+.preloader.is-leaving{pointer-events:none}
+.preloader.is-leaving .preloader-content{animation:none}
+.preloader-content>img{margin-bottom:40px}
+.preloader-content{animation:preloader-arrive .65s cubic-bezier(.22,1,.36,1) both}
+.preloader-line{margin:24px 0}
+/* One small SVG tile is embedded by Vite; both curtains share its coordinates. */
+.preloader-curtain{overflow:hidden}
+.preloader-curtain::before{content:"";position:absolute;left:0;right:0;height:100dvh;background:url('../assets/coffee-line-pattern.svg') repeat center top/400px 400px;opacity:.19;mask-image:radial-gradient(ellipse 28% 32% at 50% 50%,transparent 30%,#000 150%);pointer-events:none}
+.curtain-top::before{top:0}
+.curtain-bottom::before{bottom:0}
+@media(max-width:760px){.preloader-curtain::before{background-size:320px 320px;opacity:.17;mask-image:radial-gradient(ellipse 35% 30% at 50% 50%,transparent 30%,#000 155%)}}
+@keyframes preloader-arrive{from{transform:translateY(16px);opacity:0}to{transform:none;opacity:1}}
+@media(prefers-reduced-motion:reduce){.preloader-content{animation:none}}
+.hero,.explore-stage{min-height:0}
+.hero-product{pointer-events:auto}
+#aero-mount{position:absolute;inset:0}
+.experience{--scene-handoff:.36s cubic-bezier(.22,1,.36,1)}
+/* One readiness class crossfades both layers after the illuminated frame is drawn. */
+#aero-mount>.product-canvas>div{opacity:0;visibility:hidden;transition:opacity var(--scene-handoff)}
+.experience.has-webgl #aero-mount>.product-canvas>div{opacity:1;visibility:visible}
+.experience.has-webgl .hero-product{visibility:visible!important;opacity:0!important;transition:opacity var(--scene-handoff)}
+.scene-poster{pointer-events:none}
+.experience.is-enhanced .scene-poster{padding:120px 15% 90px 45%;object-position:70% center;transition:opacity var(--scene-handoff)}
+.experience.is-enhanced.has-poster .scene-poster{visibility:visible;opacity:var(--fallback-opacity,0)}
+.experience.is-enhanced.has-webgl .scene-poster{visibility:visible;opacity:0}
+@media(prefers-reduced-motion:reduce){.experience{--scene-handoff:0s}}
+.scene-loading{position:absolute;z-index:4;bottom:15%;right:7%;font-size:11px;color:#eee5d7;background:#171310;padding:8px 12px}
+.scene-loading[hidden]{display:none}
+.hidra-mark,img[src*="/hidra-logo-"]{filter:brightness(0) invert(1)}
+.footer-bottom>div{display:flex;align-items:center;flex-wrap:wrap;gap:12px}
+.footer-bottom a,.footer-bottom button{display:inline-flex;align-items:center;justify-content:center;min-height:44px;min-width:44px}
+.desktop-nav a{min-height:44px;display:inline-flex;align-items:center}
+.explore-chapters button{color:#baac9d;min-height:44px;min-width:24px}
+.rotation-control button{display:grid;place-items:center;min-width:36px;min-height:44px;padding:0}
+.hero-scroll .hero-scroll-copy small{color:#eee5d7;opacity:1}
+@media(max-width:760px){
+ .hero,.explore-stage{min-height:0}
+ .experience.is-enhanced .scene-poster{padding:38svh 17% 145px;object-position:center}
+ .scene-loading{right:24px;bottom:175px;max-width:70%;font-size:10px}
+ .hero-scroll .hero-scroll-copy small{font-size:10px;letter-spacing:0}
+ .hero-scroll-copy b{font-size:13px}
+ .button,.hero-content>.button,.experience.is-enhanced .hero-content>.button{min-height:44px}
+ .event-intro,.territory-copy>p:not(.eyebrow),.team-bio,.team-story p,.program-heading>p:not(.eyebrow),.program-list article p,.sponsors-heading>div>p,.allies-copy>p:not(.eyebrow),.faq-list details>p,.alliance-intro,.plan>p:not(.eyebrow),.plan ul,.alliance-terms p{font-size:14px;line-height:1.75}
+ .event-facts dt,.event-facts dd,.team-role,.faq-list summary{font-size:13px;line-height:1.6}
+ .program-list article{grid-template-columns:52px minmax(0,1fr);column-gap:12px;padding-left:16px}
+ .program-time{font-size:10px}.program-list h3{font-size:30px;line-height:1.1}
+ .sponsors-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .sponsor-mark{min-height:125px;padding:22px 18px}.sponsor-art{height:76px}
+ .footer-invitation>a,.footer-contact>a,.footer-bottom{font-size:11px}
+ .footer-main{grid-template-columns:80px minmax(0,1fr)}
+ .rotation-control{width:126px}.rotation-control input{height:24px;width:112px}
+ .rotation-control>div{height:44px;gap:0}.rotation-control button{width:40px;min-width:40px}
+ .experience.is-enhanced .explore-chapters{gap:0!important;left:15px;bottom:109px}
+ .explore-chapters button{width:40px;min-width:40px;justify-content:center;padding:0}
+ .team-controls{gap:8px}.team-controls span{margin-right:4px}
+ .contact-dialog{max-height:calc(100svh - 32px);overflow-y:auto}
+}
+@media(max-width:420px){
+ .sponsors-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .sponsor-mark{min-height:135px;padding:26px}.sponsor-art{height:82px}
+ .hero-date{font-size:10px}
+}
+@media(max-width:760px) and (max-height:740px){
+ .hero-content{top:144px}.hero-horizon{top:101px}
+ .hero h1{font-size:16vw}.hero-subtitle{font-size:24px;margin-top:13px}
+ .hero-date{margin-top:16px;font-size:9px}.hero-content>.button{margin-top:16px}
+ .hero-handwriting{font-size:26px;bottom:18%}
+ .experience.is-enhanced .explore-chapters{bottom:81px}
+ .hero-scroll .hero-scroll-copy small{font-size:9px}
+}
+@media(orientation:landscape) and (max-height:550px){
+ .scene-loading{bottom:30px}.experience.is-enhanced .scene-poster{padding:40px 8% 30px 48%}
+ .hero-content{top:29%}.hero-horizon{top:22%}
+}
+/* Reserve the scroll journey before modules arrive: lower sections stay below
+   the fold and their lazy photos cannot compete with the cover download. */
+@media(prefers-reduced-motion:no-preference){
+ html.is-loading:not(.motion-ready) .experience{min-height:950svh}
+}
+@media(prefers-reduced-motion:no-preference) and (max-width:760px), (prefers-reduced-motion:no-preference) and (orientation:landscape) and (max-height:550px){
+ html.is-loading:not(.motion-ready) .experience{min-height:850svh}
+}

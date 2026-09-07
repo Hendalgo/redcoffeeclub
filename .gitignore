@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.astro/
+tmp/
+.tmp/
+.npm-cache/
+playwright-report/
+test-results/
+/docs/qa/

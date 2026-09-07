@@ -1,0 +1,8 @@
+/* Projected product labels and progressive enhancement. */
+img{height:auto}
+.menu-close{position:absolute;right:29px;top:33px;width:40px;height:40px;border:1px solid var(--line);border-radius:50%;background:none;font-size:26px;line-height:1}
+.explore.is-static .rotation-control,.explore.is-static .annotations{display:none}
+.annotation::before{width:var(--label-gap,44px)}
+.annotation-right .annotation-note{left:calc(var(--label-gap,44px) + 12px);right:auto;text-align:left}
+.annotation-left .annotation-note{right:calc(var(--label-gap,44px) + 12px);left:auto;text-align:right}
+@media(max-width:760px){.footer-contact>a{min-height:36px}}
