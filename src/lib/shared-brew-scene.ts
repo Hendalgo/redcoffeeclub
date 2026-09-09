@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import type { AeroPressModel } from './aeropress-model';
 import { createBrewTable } from './brew-model';
 import { createBrewBackdrop } from './brew-backdrop';
+import { createBrewFrame } from './brew-frame';
 import { brewSession } from './brew-session';
 
 export function createSharedBrewScene(logo: HTMLImageElement, product: AeroPressModel, scene: THREE.Scene) {
@@ -20,6 +21,7 @@ export function createSharedBrewScene(logo: HTMLImageElement, product: AeroPress
   const fromRotation = new THREE.Quaternion(), toRotation = new THREE.Quaternion();
   const palm = new THREE.Vector3(), rim = new THREE.Vector3();
   const startPlunger = new THREE.Vector3(), endPlunger = new THREE.Vector3();
+  const framing=createBrewFrame([product.root,table.cup]);
   let displayed = 0, previous = 0, lastMotion = 0;
 
   function update(blend: number, delta: number, time: number, reduced: boolean) {
@@ -107,5 +109,5 @@ export function createSharedBrewScene(logo: HTMLImageElement, product: AeroPress
       renderer.setScissor(scissor);renderer.setScissorTest(scissorTest);
     }
   }
-  return { table, update, project, prepare, dispose };
+  return { table, update, project, prepare, dispose, framing };
 }

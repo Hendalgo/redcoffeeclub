@@ -249,7 +249,10 @@ function Product({ brandLogo, onReady, onError }: ProductProps) {
     }
     const result = brewing.current?.update(blend, delta, clock.elapsedTime, matchMedia('(prefers-reduced-motion: reduce)').matches);
     if (result) {
-      const brewZoom = Math.min(brewRect.height/result.pose.viewHeight,brewRect.width/6.5)*(1+result.pose.press*.1+result.pose.serve*.2);
+      // Keep mobile scale stable while the plunger parks beside the chamber.
+      const brewZoom = mobile
+        ? Math.min(brewRect.height/10.8,brewRect.width/8.8)
+        : Math.min(brewRect.height/result.pose.viewHeight,brewRect.width/6.5)*(1+result.pose.press*.1+result.pose.serve*.2);
       (camera as THREE.OrthographicCamera).zoom = THREE.MathUtils.lerp(zoom,brewZoom,blend);
       camera.position.set(0,THREE.MathUtils.lerp(1.7,3.6,blend),12); camera.lookAt(0,0,0);
       if (result.fluidActive) invalidate();
@@ -261,6 +264,14 @@ function Product({ brandLogo, onReady, onError }: ProductProps) {
     orthographic.left=-viewport.width/2+viewX; orthographic.right=viewport.width/2+viewX;
     orthographic.top=viewport.height/2+viewY; orthographic.bottom=-viewport.height/2+viewY;
     camera.updateProjectionMatrix(); camera.updateMatrixWorld(true);
+    if(result && mobile && blend>.8){
+      const settle=THREE.MathUtils.smoothstep(blend,.8,1);
+      brewing.current!.framing.fit(orthographic,viewport,{
+        left:brewRect.left*settle,top:brewRect.top*settle,
+        width:THREE.MathUtils.lerp(viewport.width,brewRect.width,settle),
+        height:THREE.MathUtils.lerp(viewport.height,brewRect.height,settle),
+      });
+    }
     if(result) brewing.current!.project(camera,gl.domElement,brewRect,document.querySelector('.brew-workbench')!.getBoundingClientRect());
     const clip=blend>=1?brewRect:blend>0?{top:0,left:0,right:viewport.width,bottom:viewport.height}:exploreRect;
     host.style.clipPath=`inset(${Math.max(0,clip.top)}px ${Math.max(0,viewport.width-clip.right)}px ${Math.max(0,viewport.height-clip.bottom)}px ${Math.max(0,clip.left)}px)`;
