@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 680">
+  <defs>
+    <path id="frame" d="M250 6C190 6 142 30 104 76H62C62 104 40 126 12 126V554C40 554 62 576 62 604H104C142 650 190 674 250 674S358 650 396 604H438C438 576 460 554 488 554V126C460 126 438 104 438 76H396C358 30 310 6 250 6Z"/>
+  </defs>
+  <use href="#frame" fill="#eee5d7"/>
+  <use href="#frame" transform="translate(15 15) scale(.94 .956)" fill="none" stroke="#4b151a" stroke-opacity=".72" stroke-width="1.15"/>
+</svg>

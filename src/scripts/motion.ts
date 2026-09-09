@@ -38,12 +38,7 @@ function journeyUI(progress: number, sceneProgress = progress) {
   const open = progress > .26;
   hero.inert = progress > .24;
   // The canvas remains active during the coastal introduction; only the controls wait.
-  explore.querySelectorAll<HTMLElement>('.explore-chapters,.rotation-control,.explore-bottom').forEach(el => el.inert = !open);
-  const disassembly = Math.max(0, Math.min(1, (sceneProgress - .34) / .58));
-  const bar = document.querySelector<HTMLElement>('.explore-progress-fill')!;
-  bar.style.transform = `scaleX(${disassembly})`;
-  document.querySelector('[data-progress]')!.textContent = `${Math.round(disassembly * 100).toString().padStart(2, '0')}%`;
-  document.querySelector('[data-phase]')!.textContent = progress < .44 ? 'Un método, tu mundo' : progress < .61 ? 'La presión' : progress < .8 ? 'La extracción' : 'Cada pieza cuenta';
+  explore.querySelectorAll<HTMLElement>('.explore-chapters,.rotation-control').forEach(el => el.inert = !open);
   const index = progress < .44 ? 0 : progress < .61 ? 1 : progress < .8 ? 2 : 3;
   document.querySelectorAll('[data-journey]').forEach((button, i) => i === index ? button.setAttribute('aria-current', 'step') : button.removeAttribute('aria-current'));
 }
@@ -56,9 +51,6 @@ function buildMotion() {
   explore.querySelectorAll<HTMLElement>('[inert]').forEach(el => el.inert = false);
   if (reduced.matches) {
     announceFrame(1);
-    document.querySelector('[data-phase]')!.textContent = 'Cada pieza cuenta';
-    document.querySelector('[data-progress]')!.textContent = '100%';
-    gsap.set('.explore-progress-fill', {scaleX:1});
     ScrollTrigger.refresh(); return;
   }
 
@@ -66,7 +58,7 @@ function buildMotion() {
     const mobile = !!context.conditions?.mobile || !!context.conditions?.compact;
     experience.classList.add('is-enhanced');
     const driver = { progress: 0 };
-    const ui = '.hero-content,.hero-horizon,.hero-handwriting,.hero-scroll,.hero-values,.hero-image-credit';
+    const ui = '.hero-content,.hero-handwriting,.hero-scroll,.hero-values,.hero-image-credit';
     const journey = gsap.timeline({ paused: true, defaults: { ease: 'none' } });
     const scrollDriver = { progress: 0 };
     const renderJourney = (rawProgress: number) => {
@@ -103,7 +95,7 @@ function buildMotion() {
       journey.fromTo(selector, { y: 40, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: .045 }, start);
       if (end < 1) journey.to(selector, { y: -55, autoAlpha: 0, duration: .045 }, end);
     });
-    journey.fromTo('.explore-chapters,.explore-bottom', { autoAlpha: 0, y: 25 }, { autoAlpha: 1, y: 0, duration: .035 }, .29);
+    journey.fromTo('.explore-chapters', { autoAlpha: 0, y: 25 }, { autoAlpha: 1, y: 0, duration: .035 }, .29);
     journey.fromTo('.rotation-control', { autoAlpha: 0, y: 20 }, { autoAlpha: 1, y: 0, duration: .08 }, .78);
     journey.fromTo(experience, { '--fallback-opacity': 0 }, { '--fallback-opacity': 1, duration: .14 }, .25);
     journeyUI(0);
@@ -112,10 +104,9 @@ function buildMotion() {
 
     // Counter-moving type gives the bridge its own rhythm without a third canvas.
     const manifesto = gsap.timeline({ scrollTrigger: { trigger: '.manifesto', start: 'top bottom', end: 'bottom top', scrub: .7 } });
-    manifesto.fromTo('.tagline-first', { xPercent: -6 }, { xPercent: 3, duration: 1 }, 0);
-    manifesto.fromTo('.tagline-second', { xPercent: 4 }, { xPercent: -4, duration: 1 }, 0);
-    manifesto.fromTo('.tagline-third', { xPercent: -3 }, { xPercent: 4, duration: 1 }, 0);
-    manifesto.fromTo('.manifesto-orbit', { rotation: -45, y: mobile ? 12 : 35 }, { rotation: 150, y: mobile ? -8 : -35, duration: 1 }, 0);
+    manifesto.fromTo('.tagline-first', { xPercent: mobile ? -1 : -2 }, { xPercent: mobile ? 1 : 2, duration: 1, ease: 'none' }, 0);
+    manifesto.fromTo('.tagline-second', { xPercent: 1 }, { xPercent: -1, duration: 1, ease: 'none' }, 0);
+    manifesto.fromTo('.manifesto-mark img', { rotation: -12, y: 12 }, { rotation: 12, y: -12, duration: 1, ease: 'none' }, 0);
     manifesto.fromTo('.manifesto-backdrop img', { yPercent: -4 }, { yPercent: 4, duration: 1, ease: 'none' }, 0);
 
     // Open the coastline as it enters the viewport, before the reading pin.
@@ -134,17 +125,19 @@ function buildMotion() {
     } });
     island.fromTo('.territory-handwriting', { y: 60, autoAlpha: 0, rotation: -20 }, { y: 0, autoAlpha: 1, rotation: -12, duration: .45 }, .15);
     island.fromTo('.territory-copy', { y: 45, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: .45 }, mobile ? .18 : .35);
-    // Each continuous stroke has its own normalized length. Compound paths
-    // restart their dash pattern at every move and reveal disconnected fragments.
-    const hiddenStroke = { attr: { 'stroke-dasharray': '1 1', 'stroke-dashoffset': 1 }, autoAlpha: 0 };
+    // Use the actual path length; normalized dashes combined with non-scaling
+    // strokes can leave broken contours in WebKit.
+    const hiddenStroke = (path: SVGPathElement) => {
+      const length = path.getTotalLength();
+      return { attr: { 'stroke-dasharray': `${length} ${length}`, 'stroke-dashoffset': length }, autoAlpha: 0 };
+    };
     const mapMotion = mobile ? gsap.timeline({ scrollTrigger: {
       id: 'red-island-map', trigger: '.island-map', start: 'top 85%', end: 'bottom 55%', scrub: .45,
     } }) : island;
-    // SVG attributes retain fractional offsets; CSS pixel rounding would turn a
-    // normalized 0–1 stroke into an abrupt on/off change.
-    mapMotion.fromTo('.island-outline', hiddenStroke, { attr: { 'stroke-dashoffset': 0 }, autoAlpha: 1, duration: .55, ease: 'none' }, mobile ? 0 : .35);
+    // Draw the closed coast first, then the clipped interior strokes.
+    mapMotion.fromTo('.island-outline', hiddenStroke(document.querySelector<SVGPathElement>('.island-outline')!), { attr: { 'stroke-dashoffset': 0 }, autoAlpha: 1, duration: .55, ease: 'none' }, mobile ? 0 : .35);
     gsap.utils.toArray<SVGPathElement>('.island-interior path').forEach((path, index) => {
-      mapMotion.fromTo(path, hiddenStroke, { attr: { 'stroke-dashoffset': 0 }, autoAlpha: 1, duration: .25, ease: 'none' }, (mobile ? .18 : .47) + index * .06);
+      mapMotion.fromTo(path, hiddenStroke(path), { attr: { 'stroke-dashoffset': 0 }, autoAlpha: 1, duration: .25, ease: 'none' }, (mobile ? .18 : .47) + index * .06);
     });
     mapMotion.fromTo('.island-location', { autoAlpha: 0 }, { autoAlpha: 1, duration: .12, ease: 'power1.out' }, mobile ? .6 : .78);
     // Natural mobile scroll must finish the drawing while the map is on screen.
@@ -173,7 +166,17 @@ function buildMotion() {
     });
     gsap.fromTo('.allies-banner>img', { yPercent: -5, scale: 1.15 }, { yPercent: 6, scale: 1, scrollTrigger: { trigger: '.allies-banner', start: 'top bottom', end: 'bottom top', scrub: .7 } });
     gsap.from('.allies-copy h2', { y: 90, clipPath: 'inset(100% 0% 0% 0%)', duration: 1.3, ease: 'power3.out', scrollTrigger: { trigger: '.allies-banner', start: 'top 65%', toggleActions: 'play none none reverse' } });
-    gsap.fromTo('.allies-handwriting', { rotation: -22, y: 50 }, { rotation: -5, y: -30, scrollTrigger: { trigger: '.allies-banner', start: 'top bottom', end: 'bottom top', scrub: 1 } });
+    gsap.from('.allies-handwriting', { y: 24, opacity: .2, duration: .9, ease: 'power3.out', clearProps: 'transform,opacity', scrollTrigger: { trigger: '.allies-handwriting', start: 'top 90%', once: true } });
+
+    // Entrances finish independently of scroll, leaving prices and answers still to read.
+    gsap.from('.alliance-heading > *, .alliance-intro', { y: 26, opacity: .15, stagger: .09, duration: .8, ease: 'power3.out', clearProps: 'transform,opacity', scrollTrigger: { trigger: '.alliance-heading', start: 'top 88%', once: true } });
+    gsap.utils.toArray<HTMLElement>('.plan').forEach((plan, index) => {
+      gsap.from(plan, { y: mobile ? 28 : 44, opacity: .12, delay: mobile ? 0 : (index % (innerWidth < 1200 ? 2 : 4)) * .1, duration: .85, ease: 'power3.out', clearProps: 'transform,opacity', scrollTrigger: { trigger: plan, start: 'top 91%', once: true } });
+    });
+    gsap.from('.faq-heading > *', { y: 26, opacity: .15, stagger: .1, duration: .8, ease: 'power3.out', clearProps: 'transform,opacity', scrollTrigger: { trigger: '.faq-heading', start: 'top 86%', once: true } });
+    gsap.utils.toArray<HTMLElement>('.faq-list details').forEach(row => {
+      gsap.from(row, { x: mobile ? 12 : 28, opacity: .15, duration: .7, ease: 'power3.out', clearProps: 'transform,opacity', scrollTrigger: { trigger: row, start: 'top 92%', once: true } });
+    });
     gsap.from('.footer-flower', { rotation: -90, scrollTrigger: { trigger: '.site-footer', start: 'top bottom', end: 'bottom bottom', scrub: 1 } });
     gsap.from('.sponsors-heading>*', { y: 45, autoAlpha: 0, stagger: .12, duration: .85, ease: 'power3.out', scrollTrigger: { trigger: '.sponsors-section', start: 'top 80%', toggleActions: 'play none none reverse' } });
     gsap.from('.sponsor-mark', { y: 24, autoAlpha: 0, stagger: .035, duration: .65, ease: 'power3.out', scrollTrigger: { trigger: '.sponsors-grid', start: 'top 88%', toggleActions: 'play none none reverse' } });

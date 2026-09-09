@@ -35,3 +35,6 @@ for(const [name,rect] of [['kofy',[267,195,91,94]],['seal',[530,326,68,72]]]){
 await writeFile('docs/source-assets/optimized-images.json',JSON.stringify(manifest,null,2));
 console.log('Responsive photos, brand marks and sponsor crops generated.');
 for(const width of [480,614]) await sharp('public/images/margarita-coast.webp').extract({left:553,top:0,width:614,height:1024}).resize({width}).webp({quality:78,effort:6}).toFile(`${dir}/coast-portrait-${width}.webp`);
+
+// A single transparent sprite is reused by the footer physics.
+await sharp('docs/source-assets/coffee-bean-generated.png').resize({width:192}).webp({quality:85,alphaQuality:100,effort:6}).toFile('public/optimized/coffee-bean-192.webp');

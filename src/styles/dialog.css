@@ -1,0 +1,87 @@
+/* Nine-slice artwork keeps the ornamental caps intact at every content height. */
+.contact-dialog.ornate-dialog {
+  width: min(540px, calc(100vw - 24px));
+  max-width: none;
+  max-height: calc(100svh - 24px);
+  margin: auto;
+  padding: 126px 34px 98px;
+  border: 0;
+  border-radius: 0;
+  overflow: visible;
+  background: transparent;
+  box-shadow: none;
+  filter: drop-shadow(0 24px 48px #0006);
+  text-align: center;
+  isolation: isolate;
+}
+
+.dialog-frame {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  border: solid transparent;
+  border-width: 128px 50px;
+  border-image: url('/images/dialog-cartouche.svg') 150 60 fill / 128px 50px / 0 stretch;
+}
+
+.ornate-dialog .dialog-content {
+  max-height: calc(100svh - 248px);
+  padding: 8px 18px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #641e2660 transparent;
+  scroll-padding-block: 16px;
+}
+
+.ornate-dialog .dialog-close {
+  top: 80px;
+  right: 56px;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  color: var(--wine);
+  transition: background-color .2s, border-color .2s;
+}
+.ornate-dialog .dialog-close:hover { background: #641e2609; border-color: #641e2626; }
+.ornate-dialog :focus-visible { outline: 2px solid var(--wine); outline-offset: 4px; }
+.ornate-dialog .dialog-content > img {
+  display: block;
+  width: 48px;
+  height: auto;
+  margin: 0 auto 20px;
+  filter: brightness(.35);
+}
+.ornate-dialog .eyebrow { margin: 0; font-size: 12px; line-height: 1.5; }
+.ornate-dialog h2 { margin: 16px 0 22px; font-size: 64px; line-height: 1; }
+.ornate-dialog .dialog-content > p:not(.eyebrow) { font-size: 16px; line-height: 1.6; text-wrap: pretty; }
+.ornate-dialog .dialog-content > p + p { margin-top: 20px; }
+.ornate-dialog .dialog-content > p a { overflow-wrap: anywhere; text-decoration: underline; text-underline-offset: 3px; }
+.ornate-dialog .contact-options { align-items: center; gap: 12px; margin-top: 26px; }
+.ornate-dialog .contact-options .button { justify-content: center; max-width: 100%; min-height: 48px; padding: 14px 22px; font-size: 14px; gap: 16px; }
+.ornate-dialog .contact-options .text-link { justify-content: center; min-height: 44px; font-size: 13px; gap: 18px; }
+.ornate-dialog .dialog-note { margin: 24px 0 0 !important; padding-top: 20px; border: 0; font-size: 14px !important; line-height: 1.55 !important; }
+.ornate-dialog .dialog-note::before { content: ''; display: block; width: 48px; height: 1px; margin: -20px auto 20px; background: #641e2640; }
+
+@media (max-width: 600px) {
+  .contact-dialog.ornate-dialog { padding: 110px 22px 80px; }
+  .dialog-frame { border-width: 108px 30px; border-image-width: 108px 30px; }
+  .ornate-dialog .dialog-content { max-height: calc(100svh - 214px); padding: 8px 12px; }
+  .ornate-dialog .dialog-close { top: 64px; right: 36px; }
+  .ornate-dialog .dialog-content > img { width: 42px; margin-bottom: 18px; }
+  .ornate-dialog h2 { font-size: clamp(44px, 13vw, 58px); }
+  .ornate-dialog .eyebrow { font-size: 11px; }
+  .ornate-dialog .contact-options .button { padding-inline: 16px; gap: 12px; font-size: 13px; }
+}
+
+@media (max-height: 550px) {
+  .contact-dialog.ornate-dialog { padding-block: 96px 60px; }
+  .dialog-frame { border-top-width: 60px; border-bottom-width: 60px; border-image-width: 60px 30px; }
+  .ornate-dialog .dialog-content { max-height: calc(100svh - 180px); }
+  .ornate-dialog .dialog-close { top: 48px; right: 26px; }
+  .ornate-dialog .dialog-content > img { display: none; }
+  .ornate-dialog h2 { font-size: 46px; }
+}

@@ -1,0 +1,24 @@
+---
+const beans = Array.from({length: 44}, (_, index) => ({
+  index,
+  scale: .88 + ((index * 13) % 23) / 100,
+  angle: (index * 137.5) % 360,
+  x: 7 + ((index * 61) % 87),
+  y: 8 + Math.floor(index / 15) * 32,
+}));
+---
+<section class="footer-playground" aria-label="Juega con los granos de café" data-bean-playground>
+  <div class="bean-playground-heading">
+    <div><p class="bean-playground-title">Todavía queda café.</p><p class="bean-hint" data-bean-hint>Un último puñado.</p></div>
+    <div class="bean-playground-actions">
+      <button class="bean-shuffle" type="button" data-bean-shuffle hidden>Revolver <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5M5.4 7a7.5 7.5 0 0 1 12.4-1L20 9M4 15l2.2 3a7.5 7.5 0 0 0 12.4-1"/></svg></button>
+      <button class="bean-shuffle" type="button" data-bean-reset hidden disabled>Más granos</button>
+      <button class="bean-shuffle bean-motion" type="button" data-bean-motion hidden aria-pressed="false"><span>Activar agitado</span><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="8" y="3" width="8" height="18" rx="2"/><path d="m4 7-2 3 2 3m16-6 2 3-2 3m-9 5h2"/></svg></button>
+    </div>
+  </div>
+  <p class="sr-only" id="bean-instructions">Arrastra un grano y suéltalo para lanzarlo. Un golpe fuerte lo convierte en café molido. Con el teclado, usa las flechas para elegir un grano y pulsa Enter o espacio para lanzarlo. Con Mayús y Enter puedes molerlo. Puedes desplazar la página desde el espacio libre entre los granos.</p>
+  <p class="bean-status" data-bean-status role="status" aria-live="polite"></p>
+  <div class="bean-stage" data-bean-stage aria-describedby="bean-instructions">
+    {beans.map(bean => <button type="button" class="coffee-bean" data-bean={bean.index} aria-label={`Grano de café ${bean.index + 1}. Lanzar`} tabindex="-1" disabled style={`--bean-scale:${bean.scale};--seed-x:${bean.x}%;--seed-y:${bean.y}px;--seed-angle:${bean.angle}deg`}><img src="/optimized/coffee-bean-192.webp" width="192" height="288" alt="" draggable="false" loading="lazy" decoding="async"/></button>)}
+  </div>
+</section>

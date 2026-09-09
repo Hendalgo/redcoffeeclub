@@ -18,7 +18,7 @@
 .hero-product{pointer-events:auto}
 #aero-mount{position:absolute;inset:0}
 .experience{--scene-handoff:.36s cubic-bezier(.22,1,.36,1)}
-/* One readiness class crossfades both layers after the illuminated frame is drawn. */
+/* Readiness follows the illuminated frame; brew.css coordinates the shared handoff. */
 #aero-mount>.product-canvas>div{opacity:0;visibility:hidden;transition:opacity var(--scene-handoff)}
 .experience.has-webgl #aero-mount>.product-canvas>div{opacity:1;visibility:visible}
 .experience.has-webgl .hero-product{visibility:visible!important;opacity:0!important;transition:opacity var(--scene-handoff)}

@@ -1,6 +1,7 @@
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { event, whatsapp } from '../data/event';
+import { enhanceFaq } from './faq';
 gsap.registerPlugin(ScrollTrigger);
 const menuButton=document.querySelector<HTMLButtonElement>('.menu-toggle')!;
 const menu=document.getElementById('mobile-menu')!;
@@ -19,8 +20,10 @@ function showModal(target:HTMLDialogElement,button:HTMLElement){
   modalAnimations.get(target)?.kill();
   delete target.dataset.closing;
   target.showModal();
+  const scrollContent = target.querySelector<HTMLElement>('.dialog-content');
+  if (scrollContent) scrollContent.scrollTop = 0;
   document.body.classList.add('modal-open');
-  const content = Array.from(target.children).filter(child => !child.matches('[data-close]'));
+  const content = Array.from(target.querySelector('.dialog-content')?.children ?? []);
   gsap.set([target, ...content], { clearProps: 'opacity,transform,visibility' });
   if (reduceMotion()) { target.style.setProperty('--backdrop-opacity', '1'); return; }
   const animation = gsap.timeline();
@@ -57,4 +60,4 @@ const navLinks=document.querySelectorAll<HTMLAnchorElement>('.desktop-nav a');
 const sectionObserver=new IntersectionObserver(entries=>{for(const entry of entries){if(entry.isIntersecting){const id=entry.target.matches('.experience')?'inicio':entry.target.id;navLinks.forEach(a=>{if(a.hash==='#'+id)a.setAttribute('aria-current','location');else a.removeAttribute('aria-current');});}}},{rootMargin:'-15% 0px -60% 0px'});
 navLinks.forEach(a=>{const section=document.querySelector(a.hash==='#inicio'?'.experience':a.hash);if(section)sectionObserver.observe(section);});
 document.fonts.ready.then(()=>ScrollTrigger.refresh());
-document.querySelectorAll('details').forEach(el=>el.addEventListener('toggle',()=>ScrollTrigger.refresh()));
+enhanceFaq();

@@ -1,12 +1,12 @@
 import * as THREE from 'three';
-import { createAeroPress, disposeModel } from './aeropress-model';
+import { createAeroPress, disposeModel, type AeroPressModel } from './aeropress-model';
 import { brewAt } from './brew-choreography.mjs';
 import { cupLevel } from './brew-fluid.mjs';
 import { gravityStream, liquidSurface } from './brew-liquid';
 import { createBrewAccessories } from './brew-accessories';
 
-export function createBrewTable(logo: HTMLImageElement) {
-  const product = createAeroPress(logo);
+export function createBrewTable(logo: HTMLImageElement, sharedProduct?: AeroPressModel) {
+  const product = sharedProduct ?? createAeroPress(logo);
   const accessories = createBrewAccessories(logo);
   const { cup, kettle, scoop, kettleTip } = accessories;
   const root = new THREE.Group(), brewer = new THREE.Group();
@@ -23,12 +23,18 @@ export function createBrewTable(logo: HTMLImageElement) {
   const liquidVertices=cupCoffee.geometry.getAttribute('position');
   const originalVertices=Float32Array.from(liquidVertices.array);
   let lastCupFill=-1;
-  const grounds = new THREE.Mesh(new THREE.CylinderGeometry(.575,.575,1,64),groundsMaterial); brewer.add(grounds);
-  const infusion = new THREE.Mesh(new THREE.CylinderGeometry(.577,.577,1,64,1,true),infusionMaterial); brewer.add(infusion);
+  // Contents belong to the chamber: the shared journey reparents the product
+  // independently of the brewing table. Anchor the reveal at the chamber floor.
+  const chamberContents = new THREE.Group(); chamberContents.name='Chamber_contents';
+  chamberContents.position.y=-1.24; product.chamber.add(chamberContents);
+  const grounds = new THREE.Mesh(new THREE.CylinderGeometry(.575,.575,1,64),groundsMaterial); chamberContents.add(grounds);
+  const infusion = new THREE.Mesh(new THREE.CylinderGeometry(.577,.577,1,64,1,true),infusionMaterial); chamberContents.add(infusion);
+  grounds.name='Chamber_grounds';infusion.name='Chamber_infusion';
   const coffeeJetMaterial = new THREE.MeshPhysicalMaterial({color:'#43200b',roughness:.12,clearcoat:1,envMapIntensity:.5});
   const coffeeStream = gravityStream(coffeeJetMaterial,.065); root.add(coffeeStream.mesh);
   const cupSurface=liquidSurface(coffeeMaterial),chamberSurface=liquidSurface(infusionMaterial);
-  cup.add(cupSurface.mesh);brewer.add(chamberSurface.mesh);
+  cup.add(cupSurface.mesh);chamberContents.add(chamberSurface.mesh);
+  chamberSurface.mesh.name='Chamber_liquid_surface';
   const fluid={time:-1,water:0,coffee:0,waterFlow:0,coffeeFlow:0,energy:0};
   const coffeeSource=new THREE.Vector3(),coffeeTarget=new THREE.Vector3();
   const spout=new THREE.Vector3(),waterTarget=new THREE.Vector3();
@@ -100,10 +106,10 @@ export function createBrewTable(logo: HTMLImageElement) {
       }
       liquidVertices.needsUpdate=true;lastCupFill=pose.cupLiquid;
     }
-    grounds.visible=pose.dose>.001;grounds.scale.y=.001+pose.dose*.17;grounds.position.y=-1.24+grounds.scale.y/2;
+    grounds.visible=pose.dose>.001;grounds.scale.y=.001+pose.dose*.17;grounds.position.y=grounds.scale.y/2;
     const waterHeight=Math.max(.001,pose.chamberLiquid*1.96);
-    infusion.visible=pose.chamberLiquid>.001;infusion.scale.y=waterHeight;infusion.position.y=-1.04+waterHeight/2;
-    chamberSurface.mesh.visible=infusion.visible;chamberSurface.mesh.position.y=-1.04+waterHeight;
+    infusion.visible=pose.chamberLiquid>.001;infusion.scale.y=waterHeight;infusion.position.y=.2+waterHeight/2;
+    chamberSurface.mesh.visible=infusion.visible;chamberSurface.mesh.position.y=.2+waterHeight;
     chamberSurface.update(reduced?0:time,fluid.energy,.577);
     coffeeSource.set(0,-1.55+pose.bodyY,0);coffeeTarget.set(pose.cupX,cup.position.y+.18+coffeeHeight,0);
     coffeeStream.update(coffeeSource,coffeeTarget,pose.serve>0?0:fluid.coffeeFlow,time);
@@ -155,7 +161,12 @@ export function createBrewTable(logo: HTMLImageElement) {
     rim.set(0,.6,0).applyMatrix4(product.plunger.matrixWorld);
     return {pose,palm,rim,fluid:{...fluid,level:coffeeHeight,jetVisible:coffeeStream.mesh.visible},fluidActive:fluid.energy>.002||fluid.coffeeFlow>.006||fluid.waterFlow>.006};
   }
-  function dispose(){disposeModel({...product,root});}
-  return {root,update,dispose};
+  function dispose(){
+    // Recover table-owned contents before leaving the shared product untouched.
+    root.add(chamberContents);
+    if(sharedProduct)product.root.removeFromParent();
+    disposeModel({...product,root});
+  }
+  return {root,brewer,chamberContents,cup,update,dispose};
 }
 

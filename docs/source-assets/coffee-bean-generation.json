@@ -1,0 +1,7 @@
+{
+  "tool": "Built-in image_gen",
+  "generatedSource": "docs/source-assets/coffee-bean-generated.png",
+  "webAsset": "public/optimized/coffee-bean-192.webp",
+  "delivery": "Resized to 192 × 288 WebP, preserving transparent alpha. One cached texture is reused for every bean.",
+  "prompt": "Generate ONE isolated photographic coffee bean sprite for an interactive website. Exactly one individual roasted Arabica coffee bean, viewed straight from above, long oval axis perfectly vertical, very slightly asymmetric organic oval silhouette (about 0.68 width to height), deep clear irregular central crease from top to bottom. Medium-dark roast with rich espresso brown, warm chestnut highlights and a lighter caramel interior of the crease, fine realistic wrinkled porous texture, soft broad studio illumination from upper left, softly rounded volume. The bean must remain readable on a nearly black coffee-colored website. Transparent background with real alpha, NO opaque background, no checkerboard drawn into the image, no floor, no cast shadow, no text, no lettering, no border, no props, no additional beans. Entire bean fully visible and centered, tight framing with about 8% clear transparent margin on each side. Premium macro product photo quality, not cartoon, not an icon. A single reusable object asset, not a website mockup. Output PNG with transparent alpha."
+}

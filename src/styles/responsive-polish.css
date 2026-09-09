@@ -1,0 +1,51 @@
+/* Preserve Safari's chosen viewport and user zoom without text inflation. */
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+
+/* The chapter selector is the single local progress indicator. */
+@media(min-width:761px) and (min-height:551px){
+ .experience.is-enhanced .explore-chapters{bottom:28px}
+}
+
+@media(max-width:760px) and (orientation:portrait){
+ .experience.is-enhanced .explore-intro,.experience.is-enhanced .explore-story{top:104px;left:24px;right:24px;width:auto;max-width:none}
+ .experience.is-enhanced .explore-intro h2,.experience.is-enhanced .explore-story h3{font-size:48px;line-height:1.12;margin:12px 0}
+ .experience.is-enhanced .rotation-control{bottom:24px;right:24px}
+ .experience.is-enhanced .explore-chapters{bottom:48px!important;left:16px}
+ .explore-bottom{display:none}
+ .annotation-note{width:88px;top:-8px!important}
+ .annotation-note b{font-size:12px;line-height:16px}
+ /* The chapter copy explains each action; compact labels identify its part. */
+ .annotation-note small{display:none}
+ .annotation[data-part="filter"] .annotation-note{top:-8px}
+}
+@media(max-width:380px) and (orientation:portrait){
+ .experience.is-enhanced .explore-intro h2,.experience.is-enhanced .explore-story h3{font-size:40px}
+ .annotation-note{width:76px}
+ .experience.is-enhanced .explore-chapters{left:8px}
+ .explore-chapters button{width:36px;min-width:36px}
+ .experience.is-enhanced .rotation-control{width:112px;right:20px}
+ .rotation-control input{width:100px}
+ .rotation-control button{width:36px;min-width:36px}
+}
+
+@media(max-width:760px),(orientation:landscape) and (max-height:550px){
+ .program-section{padding:64px 24px}
+ .program-heading{position:relative;inset:auto;min-width:0}
+ .program-heading h2{font-size:48px;line-height:1.12;margin-top:20px;max-width:100%}
+ .program-heading>p:not(.eyebrow){max-width:100%}
+ .program-date{display:flex;align-items:center;gap:16px;font-size:96px;line-height:1;margin:32px 0 40px}
+ .program-date small{position:static;font-size:12px;line-height:20px}
+ .program-list article{grid-template-columns:minmax(0,1fr);gap:12px;padding:24px 0 24px 24px}
+ .program-list article>div{min-width:0}
+ .program-list article::before{top:30px}
+ .program-time{font-size:12px;line-height:16px;white-space:normal}
+ .program-list h3{font-size:30px;line-height:1.12;overflow-wrap:break-word}
+ .program-list article p{margin-top:12px;max-width:100%}
+ .program-note{padding:24px 0 0}
+ .allies-banner{height:auto;min-height:0;display:block}
+ .allies-copy{position:relative;inset:auto;width:auto;padding:64px 24px 0}
+ .allies-copy h2{font-size:48px;line-height:1.12;max-width:100%;margin-top:24px}
+ .allies-copy>p:not(.eyebrow){max-width:100%;margin-top:24px}
+ .allies-copy .button{max-width:100%;margin-top:32px;padding-inline:20px;gap:16px}
+ .allies-handwriting{position:relative;display:block;inset:auto;text-align:right;margin:48px 24px 0;padding-bottom:48px;font-size:36px;line-height:1.1}
+}

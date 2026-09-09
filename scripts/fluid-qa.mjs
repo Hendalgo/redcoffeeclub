@@ -14,10 +14,8 @@ try{
     WebGL2RenderingContext.prototype[method]=function(...args){window.__drawCalls++;return original.apply(this,args);};
    }
   });
-  await page.goto('http://127.0.0.1:4322/#explora');await page.waitForFunction(()=>document.documentElement.dataset.sceneReady==='webgl');
-  await page.getByRole('button',{name:'Explorar todas las piezas'}).click();await page.waitForFunction(()=>Number(document.querySelector('.experience').dataset.journeyProgress)>.93);
-  await page.locator('[data-story="3"] [data-brew-start]').click();await page.waitForFunction(()=>document.querySelector('.brew-dialog')?.dataset.ready==='true');
-  const step=n=>page.waitForFunction(n=>document.querySelector('.brew-dialog').dataset.step===String(n),n);
+  await page.goto('http://127.0.0.1:4322/#prepara-cafe');await page.waitForFunction(()=>document.querySelector('.brew-workbench')?.dataset.ready==='true');
+  const step=n=>page.waitForFunction(n=>document.querySelector('.brew-workbench').dataset.step===String(n),n);
   await page.getByRole('button',{name:'Armar AeroPress',exact:true}).click();await step(1);
   await page.getByRole('button',{name:'Añadir café',exact:true}).click();await step(2);
   await page.locator('.brew-pour').focus();await page.keyboard.down('Space');await page.waitForTimeout(3200);await page.keyboard.up('Space');await step(3);

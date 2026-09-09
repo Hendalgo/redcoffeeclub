@@ -1,7 +1,7 @@
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 type Position = { href: string; y: number; section: string; offset: number; pin?: { id: string; progress: number } };
-const sectionIds = ['inicio', 'comunidad', 'margarita', 'evento', 'equipo', 'programa', 'patrocinadores', 'aliados', 'faq', 'contacto'];
+const sectionIds = ['inicio', 'prepara-cafe', 'comunidad', 'margarita', 'evento', 'equipo', 'programa', 'patrocinadores', 'aliados', 'faq', 'contacto'];
 const pinSections: Record<string, string> = { 'red-journey': 'inicio', 'red-island': 'margarita', 'red-team': 'equipo' };
 
 export function savedPosition(): Position | null {

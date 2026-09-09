@@ -19,6 +19,7 @@
     "@react-three/fiber": "^9.3.0",
     "astro": "^5.13.0",
     "gsap": "^3.13.0",
+    "matter-js": "0.20.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "three": "^0.180.0"
@@ -26,6 +27,7 @@
   "devDependencies": {
     "@astrojs/check": "^0.9.4",
     "@playwright/test": "^1.55.0",
+    "@types/matter-js": "^0.20.2",
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
     "@types/three": "^0.180.0",

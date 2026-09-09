@@ -25,7 +25,7 @@ try {
       const state = await page.locator('.island-map').evaluate(element => ({
         rect: element.getBoundingClientRect().toJSON(),
         copyTop: document.querySelector('.territory-copy').getBoundingClientRect().top,
-        strokes: [...element.querySelectorAll('[pathLength]')].map(path => ({ offset: Number.parseFloat(getComputedStyle(path).strokeDashoffset), opacity: Number(getComputedStyle(path).opacity) })),
+        strokes: [...element.querySelectorAll('.island-outline,.island-interior path')].map(path => ({ offset: Number.parseFloat(getComputedStyle(path).strokeDashoffset)/path.getTotalLength(), opacity: Number(getComputedStyle(path).opacity) })),
         location: Number(getComputedStyle(element.querySelector('.island-location')).opacity),
         overflow: document.documentElement.scrollWidth > innerWidth,
       }));
@@ -52,7 +52,7 @@ try {
     await page.waitForFunction(() => document.querySelector('.preloader').hidden);
     await page.waitForTimeout(1400);
     assert.ok(Math.abs(await page.evaluate(() => scrollY) - before) < 2, 'Reload preserves the drawing position');
-    const reloaded = await page.locator('.island-map [pathLength]').evaluateAll(paths => paths.map(path => ({ offset: Number.parseFloat(getComputedStyle(path).strokeDashoffset), opacity: Number(getComputedStyle(path).opacity) })));
+    const reloaded = await page.locator('.island-outline,.island-interior path').evaluateAll(paths => paths.map(path => ({ offset: Number.parseFloat(getComputedStyle(path).strokeDashoffset)/path.getTotalLength(), opacity: Number(getComputedStyle(path).opacity) })));
     // Refresh may differ at the sixth decimal: much less than one screen pixel.
     assert.ok(reloaded.every((stroke, index) => Math.abs(stroke.offset - drawn.strokes[index].offset) < .00001 && Math.abs(stroke.opacity - drawn.strokes[index].opacity) < .0001), 'Reload keeps the same partial strokes within subpixel precision');
     report.push({ viewport, snapshots, reload: true });

@@ -1,0 +1,14 @@
+---
+interface Props {
+  id: string;
+  labelledby: string;
+}
+const { id, labelledby } = Astro.props;
+---
+<dialog {id} class="contact-dialog ornate-dialog" aria-labelledby={labelledby}>
+  <span class="dialog-frame" aria-hidden="true"></span>
+  <button class="dialog-close" data-close aria-label="Cerrar">
+    <svg class="inline-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="m6 6 12 12M18 6 6 18"/></svg>
+  </button>
+  <div class="dialog-content"><slot /></div>
+</dialog>

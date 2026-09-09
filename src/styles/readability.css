@@ -64,7 +64,7 @@
 .team-role,
 .event-year,
 .program-note,
-.alliance-details > summary small,
+.alliance-heading > p,
 .plan > small,
 .footer-invitation > a,
 .footer-invitation > .footer-instagram,
@@ -91,8 +91,7 @@
 .event-content > .button,
 .territory-copy .button,
 .allies-copy .button,
-.contact-options .button,
-.explore-story .brew-entry {
+.contact-options .button {
   font-size: var(--text-reading);
   line-height: 1.5rem;
 }

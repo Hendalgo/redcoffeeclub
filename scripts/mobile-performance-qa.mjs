@@ -11,7 +11,7 @@ try {
   page.on('request',r=>requests.push(r.url()));
   await page.goto('http://127.0.0.1:4322/');await page.waitForTimeout(3500);
   assert.equal(await page.locator('canvas').count(),0,'The cover never allocates WebGL without intent');
-  assert.ok(!requests.some(url=>/mount-aero|BrewExperience|sponsor-/.test(url)),'3D and offscreen sponsor assets stay deferred');
+  assert.ok(!requests.some(url=>/mount-aero|mount-brew|BrewExperience|sponsor-/.test(url)),'3D and offscreen sponsor assets stay deferred');
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
   const hero=await page.locator('.hero-scroll').boundingBox();assert.ok(hero.y+hero.height<=height);
   await page.screenshot({path:`${folder}/${width}-hero.png`});

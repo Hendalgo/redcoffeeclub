@@ -1,0 +1,112 @@
+/* Give the closing thought a quiet, readable place over the photograph. */
+.allies-banner { display: flex; flex-direction: column; height: auto; min-height: max(690px, 95svh); }
+.allies-copy { padding-bottom: 48px; }
+.allies-handwriting {
+  position: relative;
+  display: block;
+  inset: auto;
+  align-self: flex-end;
+  margin: auto 8vw 60px;
+  padding: 0;
+  isolation: isolate;
+  font-family: var(--display);
+  font-style: italic;
+  font-size: clamp(44px, 4.4vw, 68px);
+  line-height: 1.12;
+  letter-spacing: -.015em;
+  text-align: right;
+  color: #fff5e7;
+  opacity: 1;
+  transform: none;
+  text-shadow: 0 2px 14px #080604;
+}
+.allies-handwriting::before {
+  content: '';
+  position: absolute;
+  inset: -44px -64px;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(ellipse, #120d09db 15%, #120d0980 45%, transparent 72%);
+}
+
+.alliance-heading { padding-top: 72px; }
+.alliance-content { padding-bottom: 72px; }
+.plans-grid { align-items: stretch; }
+.plan {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  isolation: isolate;
+  background: #1b1714;
+  border-color: #eee5d730;
+  transition: border-color .4s, box-shadow .4s;
+}
+.plan::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(145deg, #4b151a70, #33231b60 55%, transparent);
+  opacity: 0;
+  transition: opacity .45s;
+}
+.plan::after {
+  content: '';
+  position: absolute;
+  inset: -1px auto -1px -1px;
+  width: 2px;
+  background: var(--sand);
+  transform: scaleY(0);
+  transform-origin: bottom;
+  transition: transform .5s var(--ease);
+}
+.plan h3 { font-size: 42px; }
+.plan > strong { font-size: 42px; line-height: 1.15; color: var(--cream); margin: 28px 0 8px; }
+.plan > p:not(.eyebrow), .plan ul { color: #c9bdb1; }
+.plan .text-link { align-self: flex-start; justify-content: space-between; width: 100%; margin-top: auto; padding-top: 24px; min-height: 48px; color: var(--cream); }
+.plan .text-link svg { transition: transform .35s var(--ease); }
+.plan:focus-within { border-color: #c8ae9390; box-shadow: 0 12px 32px #0002; }
+.plan:focus-within::before { opacity: 1; }
+.plan:focus-within::after { transform: scaleY(1); }
+
+.faq-heading { align-self: start; }
+.faq-list details { position: relative; transition: background-color .4s, border-color .4s; }
+.faq-list summary { padding: 24px 16px; font-size: 16px; line-height: 1.5; min-height: 72px; }
+.faq-list summary span { transition: transform .35s var(--ease), color .35s; }
+.faq-list summary svg { flex: 0 0 20px; width: 20px; height: 20px; transition: transform .4s var(--ease), color .3s; }
+.faq-list details[open] { background: #211a16; border-color: #c8ae9360; }
+.faq-list details[data-expanded='false'] > summary svg { transform: rotate(0); }
+.faq-list details[data-expanded='true'] > summary svg { transform: rotate(45deg); }
+.faq-answer { overflow: hidden; }
+.faq-answer-content { padding: 0 50px 28px 16px; }
+.faq-answer p { margin: 0; font-size: 16px; line-height: 1.75; color: #d4c7b9; text-wrap: pretty; }
+.faq-list details:focus-within { border-color: var(--sand); }
+
+@media (hover: hover) and (pointer: fine) {
+  .plan:hover { border-color: #c8ae9390; box-shadow: 0 12px 32px #0002; }
+  .plan:hover::before { opacity: 1; }
+  .plan:hover::after { transform: scaleY(1); }
+  .plan:hover .text-link svg, .plan:focus-within .text-link svg { transform: translateX(5px); }
+  .faq-list summary:hover span { transform: translateX(5px); color: var(--sand); }
+  .faq-list summary:hover svg { color: var(--cream); }
+}
+@media (min-width: 1101px) and (min-height: 650px) {
+  .faq-heading { position: sticky; top: 112px; }
+}
+@media (max-width: 760px), (orientation: landscape) and (max-height: 550px) {
+  .allies-banner { min-height: 0; }
+  .allies-copy { padding-bottom: 0; }
+  .allies-handwriting { font-size: clamp(38px, 10vw, 48px); margin: 48px 24px 52px; }
+  .alliance-heading { padding-top: 48px; }
+  .alliance-content { padding-bottom: 48px; }
+  .plan { padding: 28px 24px; }
+  .plan > strong { font-size: 40px; }
+  .faq-list summary { padding-inline: 8px; gap: 16px; }
+  .faq-answer-content { padding: 0 8px 24px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .plan, .plan::before, .plan::after, .plan .text-link svg,
+  .faq-list details, .faq-list summary span, .faq-list summary svg { transition: none; }
+}
