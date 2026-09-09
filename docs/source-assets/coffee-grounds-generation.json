@@ -1,0 +1,7 @@
+{
+  "tool": "Built-in image_gen",
+  "source": "docs/source-assets/coffee-grounds-generated.png",
+  "webAsset": "public/optimized/coffee-grounds-512.webp",
+  "delivery": "512 x 512 WebP texture sampled by physical coffee clump sprites; loaded only with footer physics.",
+  "prompt": "Generate a seamless square photographic material texture of freshly ground roasted coffee, viewed straight down in extreme macro. Entire image filled edge to edge with dense loose fine and medium coffee grounds, small irregular porous broken flakes and fine powder nestled together. Natural dark chocolate brown and muted walnut brown with subtle lighter cut interiors, matte dry texture. Soft diffuse light from upper left for gentle depth, no shine, no harsh highlights, no orange tones. No whole beans, no bean shapes, no rocks, no large nuggets, no cup, no spoon, no text, no border, no background visible. This is a realistic coffee grounds texture for small particle sprites in a physics simulation, not pixel art or illustration. Fine granular crumbly appearance, highly detailed, uniform scale across image."
+}

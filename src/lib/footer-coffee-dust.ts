@@ -1,148 +1,109 @@
-type Point = {x:number;y:number};
-type Collider = {x:number;y:number;rx:number;ry:number;angle:number;vx:number;vy:number};
-type Particle = {element:HTMLSpanElement;x:number;y:number;vx:number;vy:number;mass:number;age:number;angle:number;spin:number;fine:number;phase:number};
+import Matter from 'matter-js';
+import type {Engine,Body as PhysicsBody} from 'matter-js';
 
-// Ballistic specks and a persistent, textured pile. The bounded DOM pool shares
-// the bean clock and goes idle after landing; no second renderer or rigid bodies.
-export function createCoffeeDust(stage: HTMLElement) {
-  const layer = document.createElement('div');layer.className='coffee-dust';layer.setAttribute('aria-hidden','true');
-  let seed=37;
-  const random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
-  const texture=['#261810','#38251a','#503725','#715039'].map(color=>{
-    let d='';
-    for(let i=0;i<650;i++){
-      const x=random()*96,y=random()*96,size=.3+random()*1.5;
-      d+=`M${x.toFixed(1)} ${y.toFixed(1)}l${size.toFixed(1)} -.3 .2 ${size.toFixed(1)} -${size.toFixed(1)} .2z`;
+type Point={x:number;y:number};
+type Fragment={body:PhysicsBody;radius:number;sprite:HTMLCanvasElement};
+const {Bodies,Body,Composite,Sleeping}=Matter;
+
+// Ground-coffee clumps share the beans' world: contact transfers momentum in
+// both directions. No height-map, painted polygon pile, or teleport on landing.
+export function createCoffeeDust(stage:HTMLElement,engine:Engine,texture:HTMLImageElement){
+  const canvas=document.createElement('canvas');canvas.className='coffee-dust';
+  canvas.setAttribute('aria-hidden','true');stage.append(canvas);
+  const ctx=canvas.getContext('2d')!;
+  let fragments:Fragment[]=[],width=0,height=0,dpr=1;
+  type Mote={x:number;y:number;vx:number;vy:number;age:number;life:number;size:number;phase:number};
+  let motes:Mote[]=[],clouds:Array<{x:number;y:number;age:number;vx:number}>=[];
+  const haze=document.createElement('canvas');haze.width=haze.height=96;
+  const hc=haze.getContext('2d')!,gradient=hc.createRadialGradient(48,48,0,48,48,48);
+  gradient.addColorStop(0,'#99714b50');gradient.addColorStop(.4,'#75503930');gradient.addColorStop(1,'#75503900');
+  hc.fillStyle=gradient;hc.fillRect(0,0,96,96);
+  function update(dt:number){
+    for(const mote of motes){
+      mote.age+=dt;mote.vx*=Math.exp(-dt*3);mote.vy+=(55+mote.size*65)*dt;
+      mote.vx+=Math.sin(mote.phase+mote.age*4)*18*dt;
+      mote.x+=mote.vx*dt;mote.y+=mote.vy*dt;
     }
-    return `<path fill="${color}" d="${d}"/>`;
-  }).join('');
-  layer.innerHTML=`<svg class="coffee-dust-bed" preserveAspectRatio="none"><defs><pattern id="coffee-grind-texture" width="96" height="96" patternUnits="userSpaceOnUse"><path fill="#38261b" d="M0 0h96v96H0z"/>${texture}</pattern></defs><path data-dust-pile fill="url(#coffee-grind-texture)"/></svg>`;
-  stage.append(layer);
-  const bed = layer.querySelector('svg')!, path=layer.querySelector<SVGPathElement>('[data-dust-pile]')!;
-  let particles: Particle[] = [], free: HTMLSpanElement[] = [];
-  let width=0,height=0,heights:number[]=[],dirty=false;
-  const colors=['#382318','#65452e','#261b14','#493022','#79563a'];
-  let disturbed=0;
-  const clouds:Array<{element:HTMLSpanElement;x:number;y:number;vx:number;age:number}>=[];
-  function haze(position:Point,velocity:Point) {
-    let cloud=clouds.find(item=>item.age>=1.4);
-    if(!cloud&&clouds.length<6){
-      const element=document.createElement('span');element.className='coffee-haze';layer.append(element);
-      cloud={element,x:0,y:0,vx:0,age:2};clouds.push(cloud);
-    }
-    if(!cloud)return;
-    Object.assign(cloud,{x:position.x,y:position.y,vx:velocity.x*3,age:0});
-    cloud.element.hidden=false;cloud.element.style.opacity='0';
+    motes=motes.filter(m=>m.age<m.life&&m.y<height);
+    for(const cloud of clouds){cloud.age+=dt;cloud.x+=cloud.vx*dt;cloud.vx*=Math.exp(-dt*3);cloud.y-=10*dt;}
+    clouds=clouds.filter(c=>c.age<1.4);
   }
-  function speck(x:number,y:number,vx:number,vy:number,mass:number) {
-    const element=free.pop()??document.createElement('span');
-    if(!element.parentNode){element.className='coffee-ground';layer.append(element);}
-    element.hidden=false;
-    const fine=Math.random(),size=.45+fine**3*2.5;
-    element.style.width=`${size.toFixed(1)}px`;element.style.height=`${(size*(.6+Math.random()*.6)).toFixed(1)}px`;
-    element.style.background=colors[Math.floor(Math.random()*colors.length)];
-    element.style.opacity='1';
-    particles.push({element,x,y,vx,vy,mass,age:0,angle:Math.random()*6,spin:(Math.random()-.5)*4,fine,phase:Math.random()*Math.PI*2});
-  }
-  function settle(particle: Particle) {
-    const index=Math.max(0,Math.min(heights.length-1,Math.floor(particle.x/width*heights.length)));
-    heights[index]+=particle.mass/(width/heights.length);dirty=true;
-    particle.element.hidden=true;free.push(particle.element);
-  }
-  function paintBed() {
-    if (!dirty) return;
-    const cell=width/heights.length;
-    // Let steep heaps spill into neighbouring columns instead of forming towers.
-    for(let pass=0;pass<12;pass++)for(let i=0;i<heights.length-1;i++){
-      const difference=heights[i]-heights[i+1],excess=Math.abs(difference)-cell*.6;
-      if(excess>0){const transfer=excess*.45*Math.sign(difference);heights[i]-=transfer;heights[i+1]+=transfer;}
-    }
-    path.setAttribute('d',`M0 ${height}L0 ${height-heights[0]}${heights.map((value,i)=>`L${((i+.5)*cell).toFixed(1)} ${(height-Math.min(height*.55,value)).toFixed(1)}`).join('')}L${width} ${height-heights.at(-1)!}V${height}Z`);
-    dirty=false;
-  }
-  function reset(nextWidth:number,nextHeight:number) {
-    width=nextWidth;height=nextHeight;
-    for(const particle of particles){particle.element.hidden=true;free.push(particle.element);}
-    clouds.forEach(cloud=>{cloud.age=2;cloud.element.hidden=true;});
-    particles=[];heights=Array(Math.max(1,Math.ceil(width/7))).fill(0);
-    bed.setAttribute('viewBox',`0 0 ${width} ${height}`);path.setAttribute('d','');
-    stage.dataset.dustParticles='0';disturbed=0;stage.dataset.dustDisturbed='0';dirty=false;
-  }
-  function burst(position:Point,velocity:Point,area:number,strength:number,reduced:boolean) {
-    if(!reduced)haze(position,velocity);
-    const limit=width<761?96:160,count=reduced?10:width<761?36:54;
-    while(particles.length+count>limit)settle(particles.shift()!);
-    for(let i=0;i<count;i++){
-      const spread=(reduced?.35:1)*(55+strength*3);
-      speck(position.x+(Math.random()-.5)*22,position.y+(Math.random()-.5)*18,
-        velocity.x*12+(Math.random()-.5)*spread*2,Math.min(30,velocity.y*6)-45-Math.random()*spread,area*.23/count);
-    }
-    stage.dataset.dustParticles=String(particles.length);paintBed();
-  }
-  function update(seconds:number,beans:Collider[]=[]) {
-    // Rake only existing mass out of the heap; fragments settle again elsewhere.
-    const cell=width/heights.length,limit=width<761?96:160;
-    for(const bean of beans){
-      const speed=Math.hypot(bean.vx,bean.vy);
-      if(speed<35)continue;
-      const c=Math.cos(bean.angle),s=Math.sin(bean.angle);
-      const extent=Math.hypot(bean.rx*s,bean.ry*c),horizontal=Math.hypot(bean.rx*c,bean.ry*s);
-      for(let i=Math.max(0,Math.floor((bean.x-horizontal)/cell));i<Math.min(heights.length,Math.ceil((bean.x+horizontal)/cell));i++){
-        if(particles.length>=limit)break;
-        const top=height-heights[i];
-        if(heights[i]<.2||bean.y+extent<top-2||bean.y-extent>height)continue;
-        const amount=Math.min(heights[i],Math.min(speed,500)*seconds*.12);
-        heights[i]-=amount;dirty=true;disturbed++;
-        speck((i+.5)*cell,top-3,bean.vx*.65+(Math.random()-.5)*60,-25-Math.min(160,speed*.3),amount*cell);
+  const sprites=Array.from({length:16},(_,index)=>{
+    const tile=document.createElement('canvas');tile.width=tile.height=64;
+    const c=tile.getContext('2d')!;
+    // Sample the photographed roast surface, not the bean silhouette. Several
+    // differently lit facets give each clump an irregular, granular surface.
+    for(let n=0;n<18;n++){
+      const angle=n*2.39996+index,distance=Math.sqrt(n/18)*21;
+      const x=32+Math.cos(angle)*distance,y=32+Math.sin(angle)*distance;
+      const radius=5+(n*7+index)%6;
+      c.save();c.beginPath();
+      for(let k=0;k<6;k++){
+        const a=k*Math.PI/3,r=radius*(.72+((k+index+n)%3)*.14);
+        const px=x+Math.cos(a)*r,py=y+Math.sin(a)*r;
+        if(k===0)c.moveTo(px,py);else c.lineTo(px,py);
       }
+      c.closePath();c.shadowColor='#080503aa';c.shadowBlur=2;c.shadowOffsetY=1;
+      c.fillStyle='#352217';c.fill();c.clip();
+      c.filter="saturate(.8) brightness(.95)";
+      c.drawImage(texture,texture.naturalWidth*(.05+(index%4)*.21),texture.naturalHeight*(.05+(n%4)*.21),70,70,x-radius,y-radius,radius*2,radius*2);
+      c.filter='none';
+      c.fillStyle=n%3===0?'#160b0655':'#8c613514';c.fill();c.restore();
     }
-    stage.dataset.dustDisturbed=String(disturbed);
-    const remaining:Particle[]=[];
-    for(const particle of particles){
-      particle.age+=seconds;
-      // Fine grounds follow air drag; heavier crumbs fall sooner. Continuous
-      // low-amplitude eddies avoid the rigid, identical ballistic trajectories.
-      const drag=1.8+(1-particle.fine)*3.8;
-      particle.vy+=(100+particle.fine*400)*seconds;
-      particle.vy*=Math.exp(-seconds*drag*.45);
-      particle.vx+=Math.sin(particle.age*4+particle.phase)*(1-particle.fine)*38*seconds;
-      particle.vx*=Math.exp(-seconds*drag);
-      particle.spin*=Math.exp(-seconds*2);
-      particle.x+=particle.vx*seconds;particle.y+=particle.vy*seconds;particle.angle+=particle.spin*seconds;
-      if(particle.x<2||particle.x>width-2){particle.x=Math.max(2,Math.min(width-2,particle.x));particle.vx*=-.25;}
-      for(const bean of beans){
-        const c=Math.cos(bean.angle),s=Math.sin(bean.angle),dx=particle.x-bean.x,dy=particle.y-bean.y;
-        const lx=c*dx+s*dy,ly=-s*dx+c*dy,distance=Math.hypot(lx/bean.rx,ly/bean.ry);
-        if(distance>=1||distance<.001)continue;
-        const px=lx/distance,py=ly/distance;
-        let nx=px/(bean.rx*bean.rx),ny=py/(bean.ry*bean.ry);
-        const length=Math.hypot(nx,ny);nx/=length;ny/=length;
-        const wx=c*nx-s*ny,wy=s*nx+c*ny;
-        particle.x=bean.x+c*px-s*py+wx;particle.y=bean.y+s*px+c*py+wy;
-        const closing=(particle.vx-bean.vx)*wx+(particle.vy-bean.vy)*wy;
-        if(closing<0){particle.vx-=closing*1.03*wx;particle.vy-=closing*1.03*wy;}
-        particle.vx+=(bean.vx-particle.vx)*.12;
-      }
-      const index=Math.max(0,Math.min(heights.length-1,Math.floor(particle.x/width*heights.length)));
-      if(particle.y>=height-heights[index]-2||particle.age>3.2)settle(particle);
-      else{
-        particle.element.style.opacity=String(Math.min(1,(3.2-particle.age)/.5)*(.45+particle.fine*.55));
-        particle.element.style.transform=`translate3d(${particle.x.toFixed(1)}px,${particle.y.toFixed(1)}px,0) rotate(${particle.angle.toFixed(2)}rad)`;
-        remaining.push(particle);
-      }
+    return tile;
+  });
+  function paint(){
+    ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,width,height);
+    for(const fragment of fragments){
+      const {body,radius,sprite}=fragment;
+      ctx.save();ctx.translate(body.position.x,body.position.y);ctx.rotate(body.angle);
+      ctx.drawImage(sprite,-radius*1.25,-radius*1.25,radius*2.5,radius*2.5);ctx.restore();
     }
-    if(remaining.length!==particles.length)stage.dataset.dustParticles=String(remaining.length);
-    particles=remaining;
     for(const cloud of clouds){
-      if(cloud.age>=1.4)continue;
-      cloud.age+=seconds;cloud.x+=cloud.vx*seconds;cloud.y-=12*seconds;cloud.vx*=Math.exp(-seconds*3);
-      const life=Math.min(1,cloud.age/1.4);
-      cloud.element.style.transform=`translate3d(${cloud.x}px,${cloud.y}px,0) scale(${.35+life*1.3})`;
-      cloud.element.style.opacity=String(Math.sin(life*Math.PI)*.2);
-      if(life>=1)cloud.element.hidden=true;
+      const progress=cloud.age/1.4,size=38+progress*105;
+      ctx.globalAlpha=Math.sin(progress*Math.PI)*.65;
+      ctx.drawImage(haze,cloud.x-size/2,cloud.y-size*.35,size,size*.7);
     }
-    paintBed();
+    for(const mote of motes){
+      ctx.globalAlpha=Math.min(1,mote.age/.06)*Math.min(1,(mote.life-mote.age)/.5)*.65;
+      ctx.fillStyle=mote.size<1?'#987454':'#67452f';ctx.beginPath();ctx.ellipse(mote.x,mote.y,mote.size,mote.size*.65,mote.phase,0,Math.PI*2);ctx.fill();
+    }
+    ctx.globalAlpha=1;stage.dataset.dustAirborne=String(motes.length);
+    stage.dataset.dustBodies=String(fragments.length);
+    stage.dataset.dustParticles=String(fragments.filter(f=>!f.body.isSleeping).length);
   }
-  function finish(){clouds.forEach(cloud=>{cloud.age=2;cloud.element.hidden=true;});particles.forEach(settle);particles=[];stage.dataset.dustParticles='0';paintBed();}
-  return {reset,burst,update,finish,get active(){return particles.length>0||clouds.some(cloud=>cloud.age<1.4);}};
+  function reset(w:number,h:number){
+    for(const fragment of fragments)Composite.remove(engine.world,fragment.body);
+    fragments=[];motes=[];clouds=[];width=w;height=h;dpr=Math.min(devicePixelRatio||1,2);
+    canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr);paint();
+  }
+  function burst(position:Point,velocity:Point,area:number,strength:number,reduced:boolean){
+    if(!reduced){
+      clouds.push({x:position.x,y:position.y,age:0,vx:velocity.x*3});clouds=clouds.slice(-6);
+      for(let i=0;i<32;i++)motes.push({x:position.x+(Math.random()-.5)*18,y:position.y+(Math.random()-.5)*14,
+        vx:velocity.x*6+(Math.random()-.5)*(80+strength*3),vy:-35-Math.random()*85,
+        age:0,life:1.1+Math.random()*1.3,size:.35+Math.random()*.85,phase:Math.random()*6});
+      motes=motes.slice(-(width<761?96:160));
+    }
+    // Twelve clumps per bean, each displaying many finer photographed grains.
+    // At most 528 bodies on desktop / 192 on a phone, all eligible for sleeping.
+    const limit=width<761?192:528,count=Math.min(12,limit-fragments.length);
+    const radius=Math.max(1.6,Math.min(4.4,Math.sqrt(area*.09/12/Math.PI)));
+    const added:PhysicsBody[]=[];
+    for(let i=0;i<count;i++){
+      const size=radius*(.7+Math.random()*.6),angle=i*2.39996;
+      const spread=Math.sqrt(i/12)*radius*5;
+      const body=Bodies.polygon(Math.max(size,Math.min(width-size,position.x+Math.cos(angle)*spread)),Math.max(size,Math.min(height-size,position.y+Math.sin(angle)*spread)),5+i%3,size,{
+        label:'Coffee grounds',density:.0012,friction:.85,frictionStatic:1,restitution:.025,
+        frictionAir:.055,sleepThreshold:35,slop:.025,
+      });
+      Body.setAngle(body,angle);
+      Body.setVelocity(body,{x:velocity.x*.18+(Math.random()-.5)*(reduced?1:Math.min(5,strength*.12)),y:Math.min(0,velocity.y*.12)-(reduced?.5:1+Math.random()*2)});
+      Body.setAngularVelocity(body,(Math.random()-.5)*.12);
+      fragments.push({body,radius:size,sprite:sprites[i%16]});added.push(body);
+    }
+    Composite.add(engine.world,added);paint();
+  }
+  function finish(){motes=[];clouds=[];fragments.forEach(f=>Sleeping.set(f.body,true));paint();}
+  return {reset,burst,paint,update,finish,get active(){return motes.length>0||clouds.length>0||fragments.some(f=>!f.body.isSleeping);}};
 }

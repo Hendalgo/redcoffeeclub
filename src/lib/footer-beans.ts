@@ -26,7 +26,9 @@ export async function mountFooterBeans(root: HTMLElement) {
   engine.gravity.y = 1;
   engine.gravity.scale = .0014;
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
-  const dust = createCoffeeDust(stage);
+  const groundsTexture=new Image();groundsTexture.src='/optimized/coffee-grounds-512.webp';
+  await groundsTexture.decode().catch(()=>{});
+  const dust = createCoffeeDust(stage,engine,groundsTexture.naturalWidth?groundsTexture:texture);
   const byBody = new Map<number,Bean>();
   const approach = new Map<number,Point>();
   const pendingCrush = new Map<Bean,{strength:number;velocity:Point}>();
@@ -63,13 +65,11 @@ export async function mountFooterBeans(root: HTMLElement) {
       Engine.update(engine, STEP);
       for(const [bean,impact] of pendingCrush) grind(bean,impact.strength,impact.velocity);
       pendingCrush.clear();
-      dust.update(STEP/1000,beans.map(bean=>({
-        ...bean.body.position,rx:bean.width*.42,ry:bean.height*.405,angle:bean.body.angle,
-        vx:Body.getVelocity(bean.body).x*60,vy:Body.getVelocity(bean.body).y*60,
-      })));
+      dust.update(STEP/1000);
       accumulator -= STEP;
     }
     paint();
+    dust.paint();
     ticking=false;
     if (grab || dust.active || beans.some(bean => !bean.body.isSleeping)) {
       frame = requestAnimationFrame(tick);

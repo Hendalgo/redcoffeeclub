@@ -22,11 +22,7 @@
 .coffee-bean.is-grabbed{cursor:grabbing;z-index:3}
 .bean-stage.is-dragging{cursor:grabbing}
 .footer-playground[data-physics-ready] .coffee-bean{left:0;top:0;bottom:auto}
-.coffee-dust{position:absolute;inset:0;pointer-events:none;overflow:hidden;contain:layout paint;z-index:1}
-.coffee-dust-bed{position:absolute;inset:0;width:100%;height:100%;stroke:none}
-.coffee-dust-bed path{stroke:none}
-.coffee-ground{position:absolute;left:0;top:0;border-radius:15% 35% 20% 30%;clip-path:polygon(9% 16%,51% 0,91% 25%,100% 66%,62% 100%,15% 79%,0 42%);box-shadow:inset .4px .5px .5px #c2925b66,inset -.5px -.5px .5px #100a08aa;pointer-events:none}
-.coffee-ground[hidden]{display:none}
+.coffee-dust{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:hidden;contain:layout paint;z-index:1}
 @media(max-width:1100px){.coffee-bean{--bean-width:58px}.coffee-bean:nth-child(n+29){display:none}}
 @media(max-width:760px){
  .site-footer{--footer-gutter:29px}
@@ -40,6 +36,3 @@
  .coffee-bean:nth-child(n+17){display:none}
 }
 @media(prefers-reduced-motion:reduce){.bean-shuffle{transition:none}}
-
-.coffee-haze{position:absolute;left:-55px;top:-35px;width:110px;height:70px;pointer-events:none;border-radius:50%;background:radial-gradient(ellipse at 40% 55%,#98734c55,transparent 65%),radial-gradient(ellipse at 65% 40%,#74533666,transparent 70%);transform-origin:center;will-change:transform,opacity}
-.coffee-haze[hidden]{display:none}

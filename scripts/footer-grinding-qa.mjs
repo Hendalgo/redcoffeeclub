@@ -49,12 +49,12 @@ try{
  await desktop.mouse.move(stage.x+6,stage.y+110);await desktop.waitForTimeout(16);await desktop.mouse.up();
  await desktop.waitForFunction(()=>Number(document.querySelector('[data-bean-playground]').dataset.groundCount)>0);
  await desktop.screenshot({path:folder+'/desktop-impact.png'});await idle(desktop);
- assert.ok(await desktop.locator('[data-dust-pile]').getAttribute('d'),'Powder lands in a permanent pile');
+ assert.ok(Number(await desktop.locator('.bean-stage').getAttribute('data-dust-bodies'))>0,'Grounds remain as physical bodies');
  assert.equal(await desktop.locator('.is-grabbed').count(),0,'Breaking a held bean releases pointer capture');
  const first=await count(desktop);
  await desktop.locator('[data-bean-reset]').click();await idle(desktop);assert.equal(await count(desktop),0);
  assert.equal(await desktop.locator('.coffee-bean:not(:disabled)').count(),44);
- assert.equal(await desktop.locator('[data-dust-pile]').getAttribute('d'),'');
+ assert.equal(await desktop.locator('.bean-stage').getAttribute('data-dust-bodies'),'0');
  // Grinding every bean checks removal, keyboard focus and bounded particle reuse.
  while(await count(desktop)<44){
   const previous=await count(desktop);
@@ -63,12 +63,12 @@ try{
   catch(error){console.log('Grind stalled',previous,await desktop.locator('[data-bean-playground]').evaluate(el=>({state:el.dataset,focus:document.activeElement.outerHTML})));await desktop.screenshot({path:folder+'/stalled.png'});throw error;}
  }
  await idle(desktop);await desktop.screenshot({path:folder+'/desktop-all-ground.png'});
- assert.ok(await desktop.locator('.coffee-ground').count()<=160,'Particle nodes stay bounded');
+ assert.ok(Number(await desktop.locator('.bean-stage').getAttribute('data-dust-bodies'))<=528,'Particle nodes stay bounded');
  assert.equal(await desktop.locator('.bean-stage [tabindex="0"]').count(),0);
  assert.equal(await desktop.evaluate(()=>document.activeElement.hasAttribute('data-bean-reset')),true,'Empty state keeps keyboard focus usable');
  assert.equal(await desktop.locator('.bean-stage').getAttribute('data-dust-particles'),'0');
- const resting=await desktop.locator('[data-dust-pile]').getAttribute('d');await desktop.waitForTimeout(400);
- assert.equal(await desktop.locator('[data-dust-pile]').getAttribute('d'),resting,'Settled powder stops updating');
+ const resting=await desktop.locator('canvas.coffee-dust').evaluate(c=>c.toDataURL());await desktop.waitForTimeout(400);
+ assert.equal(await desktop.locator('canvas.coffee-dust').evaluate(c=>c.toDataURL()),resting,'Settled powder stops updating');
  report.push({desktop:true,strongPointerImpact:first,allGround:44,boundedParticles:true,sleep:true});await desktop.close();
 
  const mobile=await browser.newPage({viewport:{width:393,height:852},isMobile:true,hasTouch:true});await permission(mobile,'granted');await open(mobile);
@@ -78,7 +78,7 @@ try{
  await shake(mobile,5);assert.equal(await count(mobile),0,'Ordinary phone movement does not grind');
  await shake(mobile,26);await mobile.waitForTimeout(100);const shaken=await count(mobile);assert.ok(shaken>=2&&shaken<16);
  await mobile.screenshot({path:folder+'/mobile-shake.png'});await idle(mobile);
- assert.ok(await mobile.locator('.coffee-ground').count()<=96);
+ assert.ok(Number(await mobile.locator('.bean-stage').getAttribute('data-dust-bodies'))<=192);
  await mobile.locator('[data-bean-motion]').click();await shake(mobile);assert.equal(await count(mobile),shaken,'Turning the sensor off stops shakes');
  await mobile.locator('[data-bean-motion]').click();
  await mobile.evaluate(()=>scrollTo({top:0,behavior:'instant'}));
