@@ -1,15 +1,66 @@
 import Matter from 'matter-js';
-import type {Engine,Body as PhysicsBody} from 'matter-js';
+import type {Engine,Body as PhysicsBody,Constraint as PhysicsConstraint} from 'matter-js';
 
 type Point={x:number;y:number};
 type Fragment={body:PhysicsBody;radius:number;sprite:HTMLCanvasElement};
-const {Bodies,Body,Composite,Sleeping}=Matter;
+const {Bodies,Body,Composite,Sleeping,Constraint}=Matter;
 
 // Ground-coffee clumps share the beans' world: contact transfers momentum in
 // both directions. No height-map, painted polygon pile, or teleport on landing.
-export function createCoffeeDust(stage:HTMLElement,engine:Engine,texture:HTMLImageElement){
+export function createCoffeeDust(stage:HTMLElement,engine:Engine,texture:HTMLImageElement,wake:()=>void=()=>{}){
   const canvas=document.createElement('canvas');canvas.className='coffee-dust';
   canvas.setAttribute('aria-hidden','true');stage.append(canvas);
+  type Handful={pointerId:number;button:HTMLButtonElement;constraints:PhysicsConstraint[];offsets:Point[];bodies:PhysicsBody[];samples:Array<Point&{time:number}>};
+  let handful:Handful|null=null;
+  const handles:HTMLButtonElement[]=[];
+  function near(point:Point){return fragments.filter(f=>Math.hypot(f.body.position.x-point.x,f.body.position.y-point.y)<48).sort((a,b)=>Math.hypot(a.body.position.x-point.x,a.body.position.y-point.y)-Math.hypot(b.body.position.x-point.x,b.body.position.y-point.y)).slice(0,36);}
+  function release(fling=false,event?:PointerEvent){
+    if(!handful)return;
+    const held=handful;handful=null;
+    held.constraints.forEach(c=>Composite.remove(engine.world,c));
+    const latest=held.samples.at(-1)!,first=held.samples.find(p=>latest.time-p.time<=90)??latest;
+    const fresh=event&&event.timeStamp-latest.time<100,elapsed=Math.max(16,latest.time-first.time);
+    held.bodies.forEach(body=>{Sleeping.set(body,false);Body.setVelocity(body,{x:fling&&fresh?Math.max(-16,Math.min(16,(latest.x-first.x)/elapsed*16.667)):0,y:fling&&fresh?Math.max(-16,Math.min(16,(latest.y-first.y)/elapsed*16.667)):0});});
+    if(held.button.hasPointerCapture(held.pointerId))held.button.releasePointerCapture(held.pointerId);
+    stage.classList.remove('is-scooping');stage.dataset.dustHeld='0';wake();
+  }
+  function shake(strength=26){
+    release();
+    fragments.forEach(({body})=>{Sleeping.set(body,false);Body.setVelocity(body,{x:(Math.random()-.5)*Math.min(14,strength*.4),y:-3-Math.random()*Math.min(9,strength*.25)});Body.setAngularVelocity(body,(Math.random()-.5)*.25);});
+    wake();
+  }
+  function createHandle(){
+    const button=document.createElement('button');button.type='button';button.className='coffee-handful';button.setAttribute('aria-label','Puñado de café molido. Arrastrar o pulsar para lanzar.');stage.append(button);handles.push(button);
+    button.addEventListener('pointerdown',event=>{
+      if(!event.isPrimary||event.button!==0||handful)return;
+      const rect=stage.getBoundingClientRect(),point={x:event.clientX-rect.left,y:event.clientY-rect.top};
+      const selected=near(point);if(!selected.length)return;
+      event.preventDefault();
+      const constraints=selected.map(({body})=>{
+        Sleeping.set(body,false);
+        return Constraint.create({bodyB:body,pointA:{...body.position},length:0,stiffness:.14,damping:.2});
+      });
+      // Store offsets on each constraint so the pinch preserves a loose handful.
+      const offsets=selected.map(({body})=>({x:body.position.x-point.x,y:body.position.y-point.y}));
+      Composite.add(engine.world,constraints);
+      handful={pointerId:event.pointerId,button,constraints,offsets,bodies:selected.map(f=>f.body),samples:[{...point,time:event.timeStamp}]};
+      button.setPointerCapture(event.pointerId);stage.classList.add('is-scooping');stage.dataset.dustHeld=String(selected.length);wake();
+    });
+    button.addEventListener('pointermove',event=>{
+      if(!handful||handful.pointerId!==event.pointerId)return;
+      const rect=stage.getBoundingClientRect(),point={x:Math.max(8,Math.min(width-8,event.clientX-rect.left)),y:Math.max(8,Math.min(height-8,event.clientY-rect.top))};
+      handful.constraints.forEach((c,i)=>{const offset=handful!.offsets[i];c.pointA={x:point.x+offset.x,y:point.y+offset.y};if(c.bodyB)Sleeping.set(c.bodyB,false);});
+      handful.samples.push({...point,time:event.timeStamp});handful.samples=handful.samples.filter(p=>event.timeStamp-p.time<120);wake();
+    });
+    button.addEventListener('pointerup',e=>{if(handful?.pointerId===e.pointerId)release(true,e);});
+    button.addEventListener('pointercancel',()=>release());button.addEventListener('lostpointercapture',()=>release());
+    button.addEventListener('click',event=>{
+      if(event.detail!==0)return;
+      const point={x:Number(button.dataset.x),y:Number(button.dataset.y)};
+      near(point).forEach(({body})=>{Sleeping.set(body,false);Body.setVelocity(body,{x:(Math.random()-.5)*5,y:-6-Math.random()*3});});wake();
+    });
+    return button;
+  }
   const ctx=canvas.getContext('2d')!;
   let fragments:Fragment[]=[],width=0,height=0,dpr=1;
   type Mote={x:number;y:number;vx:number;vy:number;age:number;life:number;size:number;phase:number};
@@ -68,11 +119,27 @@ export function createCoffeeDust(stage:HTMLElement,engine:Engine,texture:HTMLIma
       ctx.globalAlpha=Math.min(1,mote.age/.06)*Math.min(1,(mote.life-mote.age)/.5)*.65;
       ctx.fillStyle=mote.size<1?'#987454':'#67452f';ctx.beginPath();ctx.ellipse(mote.x,mote.y,mote.size,mote.size*.65,mote.phase,0,Math.PI*2);ctx.fill();
     }
+    // Local touch targets only cover piles; the rest of the arena still scrolls.
+    const bins=new Map<number,Point>();
+    for(const {body} of fragments){
+      const column=Math.floor(body.position.x/44),existing=bins.get(column);
+      if(!existing||body.position.y>existing.y)bins.set(column,{...body.position});
+    }
+    let index=0;
+    for(const point of bins.values()){
+      const button=handles[index++]??createHandle();
+      if(handful?.button===button)continue;
+      button.hidden=false;button.dataset.x=String(point.x);button.dataset.y=String(point.y);
+      button.style.left=`${Math.max(0,Math.min(width-44,point.x-22))}px`;
+      button.style.top=`${Math.max(0,Math.min(height-44,point.y-22))}px`;
+    }
+    handles.slice(index).forEach(button=>{if(handful?.button!==button)button.hidden=true;});
     ctx.globalAlpha=1;stage.dataset.dustAirborne=String(motes.length);
     stage.dataset.dustBodies=String(fragments.length);
     stage.dataset.dustParticles=String(fragments.filter(f=>!f.body.isSleeping).length);
   }
   function reset(w:number,h:number){
+    release();handles.forEach(button=>button.hidden=true);
     for(const fragment of fragments)Composite.remove(engine.world,fragment.body);
     fragments=[];motes=[];clouds=[];width=w;height=h;dpr=Math.min(devicePixelRatio||1,2);
     canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr);paint();
@@ -104,6 +171,6 @@ export function createCoffeeDust(stage:HTMLElement,engine:Engine,texture:HTMLIma
     }
     Composite.add(engine.world,added);paint();
   }
-  function finish(){motes=[];clouds=[];fragments.forEach(f=>Sleeping.set(f.body,true));paint();}
-  return {reset,burst,paint,update,finish,get active(){return motes.length>0||clouds.length>0||fragments.some(f=>!f.body.isSleeping);}};
+  function finish(){release();motes=[];clouds=[];fragments.forEach(f=>Sleeping.set(f.body,true));paint();}
+  return {reset,burst,paint,update,finish,shake,release,get holding(){return !!handful;},get count(){return fragments.length;},get active(){return !!handful||motes.length>0||clouds.length>0||fragments.some(f=>!f.body.isSleeping);}};
 }

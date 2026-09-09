@@ -28,7 +28,7 @@ export async function mountFooterBeans(root: HTMLElement) {
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   const groundsTexture=new Image();groundsTexture.src='/optimized/coffee-grounds-512.webp';
   await groundsTexture.decode().catch(()=>{});
-  const dust = createCoffeeDust(stage,engine,groundsTexture.naturalWidth?groundsTexture:texture);
+  const dust = createCoffeeDust(stage,engine,groundsTexture.naturalWidth?groundsTexture:texture,wake);
   const byBody = new Map<number,Bean>();
   const approach = new Map<number,Point>();
   const pendingCrush = new Map<Bean,{strength:number;velocity:Point}>();
@@ -99,6 +99,7 @@ export async function mountFooterBeans(root: HTMLElement) {
   }
 
   function release(fling = false, event?: PointerEvent) {
+    dust.release();
     if (!grab) return;
     const current = grab;
     if(fling)current.bean.armedUntil=engine.timing.timestamp+2400;
@@ -182,7 +183,7 @@ export async function mountFooterBeans(root: HTMLElement) {
     Composite.remove(engine.world,bean.body);byBody.delete(bean.body.id);
     beans.splice(index,1);bean.element.hidden=true;bean.element.disabled=true;bean.element.tabIndex=-1;
     dust.burst(position,velocity,bean.width*bean.height,strength,reduced.matches);
-    groundCount++;root.dataset.groundCount=String(groundCount);reset.disabled=false;shuffle.disabled=!beans.length;
+    groundCount++;root.dataset.groundCount=String(groundCount);reset.disabled=false;shuffle.disabled=!beans.length&&!dust.count;
     select(Math.min(index,beans.length-1),focused);
     clearTimeout(announceTimer);
     announceTimer=setTimeout(()=>{status.textContent=beans.length?`${groundCount} ${groundCount===1?'grano molido':'granos molidos'}.`:'Todo molido. Pulsa Más granos para volver a jugar.';},350);
@@ -212,11 +213,12 @@ export async function mountFooterBeans(root: HTMLElement) {
   Events.on(engine,'collisionStart',queueImpact);
   Events.on(engine,'collisionActive',queueImpact);
   const phone=createBeanMotion(root,strength=>{
-    if(!inView||!pageActive||!beans.length)return;
+    if(!inView||!pageActive||(!beans.length&&!dust.count))return;
     release();
     const targets=[...beans].sort(()=>Math.random()-.5).slice(0,strength>30?4:2);
     targets.forEach(bean=>grind(bean,strength,{x:0,y:-5}));
     beans.forEach(bean=>throwBean(bean,(Math.random()-.5)*14,-6-Math.random()*5));
+    dust.shake(strength);wake();
   });
 
   function pointerPosition(event: PointerEvent, current: Grab): Point {
@@ -229,7 +231,7 @@ export async function mountFooterBeans(root: HTMLElement) {
   stage.addEventListener('pointerdown', event => {
     const element = (event.target as Element).closest<HTMLButtonElement>('[data-bean]');
     const bean = beans.find(item => item.element===element);
-    if (!bean || grab || !event.isPrimary || event.button!==0) return;
+    if (!bean || grab || dust.holding || !event.isPrimary || event.button!==0) return;
     event.preventDefault();
     const bounds = stage.getBoundingClientRect();
     const point = {x:event.clientX-bounds.left, y:event.clientY-bounds.top};
@@ -286,6 +288,7 @@ export async function mountFooterBeans(root: HTMLElement) {
   shuffle.addEventListener('click', () => {
     release();
     beans.forEach(bean => throwBean(bean,(Math.random()-.5)*18,-9-Math.random()*7));
+    dust.shake();wake();
   });
   reset.addEventListener('click',()=>{resize(true);status.textContent='Un nuevo puñado. A jugar.';});
 

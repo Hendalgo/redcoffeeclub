@@ -36,3 +36,9 @@
  .coffee-bean:nth-child(n+17){display:none}
 }
 @media(prefers-reduced-motion:reduce){.bean-shuffle{transition:none}}
+
+.coffee-handful{position:absolute;width:44px;height:44px;padding:0;border:0;border-radius:50%;background:transparent;touch-action:none;cursor:grab;z-index:2;-webkit-tap-highlight-color:transparent}
+.coffee-handful[hidden]{display:none}
+.coffee-handful:focus-visible{outline:1px solid var(--sand);outline-offset:-3px;background:#c1a47d12}
+.bean-stage.is-scooping,.is-scooping .coffee-handful{cursor:grabbing}
+.footer-playground[data-physics-ready] .coffee-bean{z-index:3}
