@@ -1,0 +1,44 @@
+---
+import { merch, merchInquiry } from '../data/merch';
+import { event } from '../data/event';
+---
+<section id="merch" class="merch-section" aria-labelledby="merch-title" data-merch>
+  <div class="merch-heading">
+    <div class="merch-overline"><p>RED Coffee Club · Merch</p><span>Próximamente</span></div>
+    <h2 id="merch-title">La RED se lleva puesta.</h2>
+    <p>El mismo amor por el café. Ahora, contigo.</p>
+  </div>
+  <div class="merch-showroom" role="region" aria-roledescription="carrusel" aria-label="Adelanto de las franelas RED Coffee Club">
+    <div class="merch-rail" aria-hidden="true"><i></i></div>
+    <div class="merch-rack" data-merch-rack tabindex="0" aria-label="Franelas. Usa las flechas izquierda y derecha o desliza para explorar.">
+      {merch.map((item, index) => <figure class="merch-item" data-merch-item data-product={index}>
+        <div class="merch-garment">
+          <img class="merch-shirt" src={item.image} alt={`Franela ${item.color.toLowerCase()} en un gancho, concepto provisional de RED Coffee Club`} width="768" height="1152" loading="lazy" decoding="async" draggable="false"/>
+          <img class:list={['merch-print', { 'merch-print-dark': item.ink === 'dark' }]} src="/optimized/logo-160.webp" width="160" height="112" alt="" loading="lazy" decoding="async" draggable="false"/>
+        </div>
+        <a class="merch-product-link" data-merch-product data-ink={item.ink} href={merchInquiry(item)} target="_blank" rel="noopener noreferrer" draggable="false" aria-label={`Ver producto ${item.name}, color ${item.color}: lo quiero por WhatsApp`}>
+          <span class="merch-action-rest" aria-hidden="true">Ver producto <span>↗</span></span>
+          <span class="merch-action-buy" aria-hidden="true">Lo quiero <svg viewBox="0 0 24 24"><path d="M4 12h16m-6-6 6 6-6 6"/></svg></span>
+        </a>
+        <figcaption>{item.name} · {item.color}</figcaption>
+      </figure>)}
+    </div>
+    <div class="merch-arrows" data-merch-controls hidden>
+      <button type="button" data-merch-step="-1" aria-label="Franela anterior" aria-controls="merch"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M20 12H4m6-6-6 6 6 6"/></svg></button>
+      <button type="button" data-merch-step="1" aria-label="Siguiente franela" aria-controls="merch"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 12h16m-6-6 6 6-6 6"/></svg></button>
+    </div>
+  </div>
+  <div class="merch-details">
+    <div class="merch-selection" aria-live="off" aria-atomic="true" data-merch-status>
+      <span class="merch-selection-label">La colección</span>
+      <h3><span data-merch-name>{merch[0].name}</span><span class="merch-color" data-merch-color>{merch[0].color}</span></h3>
+    </div>
+    <div class="merch-controls" data-merch-controls hidden>
+      <span class="merch-counter"><span data-merch-count>01</span><span aria-hidden="true"> / </span><span>03</span></span>
+      <button type="button" class="merch-play" data-merch-play aria-label="Pausar carrusel automático" aria-pressed="false"><svg aria-hidden="true" viewBox="0 0 24 24"><path class="merch-pause-icon" d="M9 6v12M15 6v12"/><path class="merch-play-icon" d="m9 6 9 6-9 6Z"/></svg></button>
+    </div>
+    <a class="merch-follow" href={event.instagram} target="_blank" rel="noopener noreferrer">Sigue el lanzamiento<svg aria-hidden="true" viewBox="0 0 24 24"><path d="M6 18 18 6M6 6h12v12"/></svg></a>
+  </div>
+  <p class="merch-note">Un adelanto de nuestra merch. Diseños en desarrollo.</p>
+</section>
+<script src="../scripts/merch-rail.ts"></script>

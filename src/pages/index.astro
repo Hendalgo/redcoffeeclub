@@ -2,6 +2,7 @@
 import '../styles/site.css';
 import BrewExperience from '../components/BrewExperience';
 import FooterBeans from '../components/FooterBeans.astro';
+import MerchRail from '../components/MerchRail.astro';
 import OrnateDialog from '../components/OrnateDialog.astro';
 import { event, team, program, alliancePlans, faqs, contacts, whatsapp } from '../data/event';
 import { sponsors, communityAllies } from '../data/sponsors';
@@ -18,7 +19,7 @@ import '@fontsource/manrope/latin-400.css';
 import '@fontsource/manrope/latin-500.css';
 import '@fontsource/manrope/latin-600.css';
 import '@fontsource/caveat/latin-400.css';
-const nav = [{id:'inicio',name:'Inicio'},{id:'evento',name:'El evento'},{id:'equipo',name:'Equipo'},{id:'programa',name:'Programa'},{id:'patrocinadores',name:'Patrocinadores'},{id:'aliados',name:'Aliados'},{id:'faq',name:'FAQ'}];
+const nav = [{id:'inicio',name:'Inicio'},{id:'evento',name:'El evento'},{id:'equipo',name:'Equipo'},{id:'programa',name:'Programa'},{id:'merch',name:'Merch'},{id:'patrocinadores',name:'Patrocinadores'},{id:'aliados',name:'Aliados'},{id:'faq',name:'FAQ'}];
 const sponsorMarks = sponsors;
 const facts = [
   {icon:'calendar',title:event.date,detail:event.venue+', Guarame'},
@@ -202,6 +203,7 @@ const facts = [
       </div>
     </section>
     <section id="programa" class="program-section" aria-labelledby="program-title"><div class="program-heading"><p class="eyebrow">Un día para encontrarnos</p><h2 id="program-title">El café nos<br/><em>marca el ritmo.</em></h2><p>Una jornada alrededor de la competencia, las buenas conversaciones y lo que viene para nuestro café.</p><span class="program-date">22 <small>SEP<br/>2025</small></span></div><div class="program-list">{program.map(item=><article><span class="program-time">{item.time}</span><div><h3>{item.title}</h3><p>{item.body}</p></div></article>)}<p class="program-note">Horario general del dossier. La organización no ha detallado los horarios de cada ronda o microactividad en este documento.</p></div></section>
+    <MerchRail />
     <section id="patrocinadores" class="sponsors-section" aria-labelledby="sponsors-title">
       <div class="sponsors-heading"><p class="eyebrow">Las marcas que se suman</p><h2 id="sponsors-title">Lo hacemos<br/><em>en comunidad.</em></h2><div><p>Nuestros patrocinadores y aliados hacen posible este encuentro. Gracias por creer en el talento y en todo lo que puede nacer de un café.</p><button class="text-link" data-contact="alianza">Tu marca puede ser parte <svg><use href="#i-arrow"/></svg></button></div></div>
       <div class="sponsors-grid">{sponsorMarks.map((sponsor) => {
