@@ -82,6 +82,8 @@
 .faq-answer { overflow: hidden; }
 .faq-answer-content { padding: 0 50px 28px 16px; }
 .faq-answer p { margin: 0; font-size: 16px; line-height: 1.75; color: #d4c7b9; text-wrap: pretty; }
+.faq-dossier-link { display: inline-flex; align-items: center; gap: 8px; margin-top: 16px; color: var(--sand); font-size: 13px; text-decoration: underline; text-underline-offset: 3px; }
+.faq-dossier-link svg { width: 16px; height: 16px; }
 .faq-list details:focus-within { border-color: var(--sand); }
 
 @media (hover: hover) and (pointer: fine) {

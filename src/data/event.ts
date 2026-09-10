@@ -37,13 +37,14 @@ export const alliancePlans = [
   { family: 'Escena', name: 'Impulso', contribution: 'Aporte material', places: 'Modalidad de intercambio', description: 'Recursos que hacen posible la experiencia.', benefits: ['Presencia en historias durante el evento.', 'Inclusión en el recap.', 'Logo en el material P.O.P. oficial.'], pages: [16] },
   { family: 'Escena', name: 'Experiencia', contribution: '50 USD', places: '5 cupos en el dossier', description: 'Conexión directa con la comunidad.', benefits: ['Espacio para la presentación de producto.', 'Inclusión de marca en la camisa oficial.'], note: 'El dossier menciona beneficios del “Aliado Presencia”, un plan que no define. Su alcance debe confirmarse con el equipo.', pages: [17] },
 ];
-export const faqs = [
+type Faq = { q: string; a: string; dossierLink?: string; pages: number[] };
+export const faqs: Faq[] = [
   { q: '¿Cuándo y dónde es el encuentro?', a: `El encuentro es el ${event.dateFull}, en Rancho Victorio, Guarame, isla de Margarita. El horario anunciado es de ${event.hours}.`, pages: [5,6,8,9] },
-  { q: '¿Puedo ir aunque no compita?', a: 'Sí. El evento descrito en el dossier está abierto al público y tiene entrada gratuita. El aforo estimado es de 150 personas.', pages: [9] },
+  { q: '¿Puedo ir aunque no compita?', a: 'Sí. El evento está abierto al público, tiene entrada gratuita y un aforo estimado de 150 personas.', pages: [9] },
   { q: '¿Quiénes pueden competir?', a: 'La convocatoria a competir es nacional y reúne a baristas y amantes del café. Los requisitos y la disponibilidad de futuras convocatorias deben consultarse directamente con el equipo.', pages: [8,9] },
-  { q: '¿Cómo solicito información para participar?', a: 'Pulsa “Quiero participar” para elegir WhatsApp o correo. El dossier no incluye un formulario, una tarifa de competición ni un reglamento de inscripción. El contacto no confirma una plaza.', pages: [9,21] },
+  { q: '¿Cómo solicito información para participar?', a: 'Pulsa “Quiero participar” para elegir WhatsApp o correo. El contacto no confirma una plaza.', dossierLink: 'Consulta nuestro dossier para conocer los detalles disponibles.', pages: [9,21] },
   { q: '¿Qué obtienen los primeros lugares?', a: `Los tres primeros lugares clasifican a la Final Nacional del Venezuelan AeroPress Championship ${event.year}. El documento no especifica premios económicos.`, pages: [8,9] },
-  { q: '¿Hay otras actividades además de la competencia?', a: 'Sí, el dossier anuncia microactividades alrededor de la competencia. No contiene un cronograma detallado ni horarios de cada ronda.', pages: [9] },
-  { q: '¿Cómo puede mi marca convertirse en aliada?', a: 'Existen las modalidades Legado (Esencia y Emblema) y Escena (Impulso y Experiencia). Puedes consultar el dossier y conversar con el equipo para confirmar condiciones, disponibilidad y vigencia de los aportes.', pages: [11,12,13,14,15,16,17,20] },
-  { q: '¿Las alianzas incluyen exclusividad?', a: 'Según el dossier, los planes Legado incluyen exclusividad de categoría y prioridad de visibilidad. Los planes Escena no ofrecen exclusividad comercial. El aliado asume la gestión y el traslado de sus aportes materiales.', pages: [18,19] },
+  { q: '¿Hay otras actividades además de la competencia?', a: 'Sí, a lo largo del evento habrá microactividades alrededor de la competencia que no te querrás perder.', pages: [9] },
+  { q: '¿Cómo puede mi marca convertirse en aliada?', a: 'Existen las modalidades Legado (Esencia y Emblema) y Escena (Impulso y Experiencia). Conversa con el equipo para confirmar condiciones, disponibilidad y vigencia de los aportes.', dossierLink: 'Consulta nuestro dossier para conocer las modalidades.', pages: [11,12,13,14,15,16,17,20] },
+  { q: '¿Las alianzas incluyen exclusividad?', a: 'Los planes Legado incluyen exclusividad de categoría y prioridad de visibilidad. Los planes Escena no ofrecen exclusividad comercial. El aliado asume la gestión y el traslado de sus aportes materiales.', dossierLink: 'Consulta nuestro dossier para conocer las condiciones completas.', pages: [18,19] },
 ];

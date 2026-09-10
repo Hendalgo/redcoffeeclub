@@ -1,6 +1,6 @@
 import inventory from '../../docs/source-assets/sponsors-drive.json';
 
-type Sponsor = { name: string; account?: string; src: string; width: number; height: number; source: string };
+type Sponsor = { name: string; account?: string; href?: string; download?: boolean; src: string; width: number; height: number; source: string };
 function original(index: number, name: string, account?: string): Sponsor {
  const file=inventory.files.find(file => file.index === index)!;
  const [x,y,w,h]=file.bounds, pad=Math.ceil(Math.max(w,h)*.025);
@@ -36,7 +36,7 @@ export const sponsors: Sponsor[] = [
   original(1, 'Dos Mile', 'dos.mile'),
   original(22, 'Minalba'),
   original(8, 'Minalba Sparkling'),
-  { name: 'Hidra', src: '/optimized/hidra-logo-400.webp', width: 1080, height: 300, source: 'local' },
+  { name: 'Hidra', href: 'https://hidra.zip', src: '/optimized/hidra-logo-400.webp', width: 1080, height: 300, source: 'local' },
 ];
 
 // Aillio's alternate symbol and RED's organizer logo are not extra sponsors.
