@@ -15,7 +15,7 @@ assert.equal(await page.locator('.product-canvas canvas').count(),1);
 assert.equal(await page.locator('.pin-spacer').count(),3);
 await page.locator('.hero-content [data-contact]').click();
 assert.equal(await page.locator('#contact-dialog').evaluate(e=>e.open),true);
-assert.match(await page.locator('#contact-whatsapp').getAttribute('href'),/^https:\/\/wa.me\/584126350980\?text=/);
+assert.match(await page.locator('#contact-whatsapp').getAttribute('href'),/^https:\/\/wa.me\/584248326285\?text=/);
 await page.keyboard.press('Escape');
 await page.waitForFunction(() => !document.querySelector('#contact-dialog').open);
 assert.equal(await page.locator('.hero-content [data-contact]').evaluate(e=>document.activeElement===e),true);

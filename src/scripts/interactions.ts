@@ -43,8 +43,8 @@ function closeModal(target:HTMLDialogElement){
 }
 document.querySelectorAll<HTMLElement>('[data-contact]').forEach(button=>button.addEventListener('click',()=>{
   const alliance=button.dataset.contact==='alianza',plan=button.dataset.plan;
-  const message=alliance?'Hola, quisiera conversar sobre '+(plan?'la alianza '+plan:'las alianzas')+' con RED Coffee Club y confirmar las condiciones vigentes.':'Hola, quisiera información sobre las próximas convocatorias de AeroPress Margarita y cómo participar.';
-  document.getElementById('contact-description')!.textContent=alliance?'Conversemos sobre '+(plan?'la modalidad '+plan:'cómo tu marca puede sumarse')+' y las condiciones vigentes.':'Consulta al equipo cómo participar en las próximas convocatorias.';
+  const message=alliance?'Hola, quisiera conversar sobre '+(plan?'la alianza '+plan:'las alianzas')+' con RED Coffee Club y confirmar las condiciones vigentes.':'Hola, quisiera participar como competidor en AeroPress Margarita y conocer los próximos eventos de RED Coffee Club.';
+  document.getElementById('contact-description')!.textContent=alliance?'Conversemos sobre '+(plan?'la modalidad '+plan:'cómo tu marca puede sumarse')+' y las condiciones vigentes.':'Consulta al equipo cómo competir en AeroPress Margarita o participar en futuros eventos de RED.';
   (document.getElementById('contact-whatsapp') as HTMLAnchorElement).href=whatsapp(message);
   (document.getElementById('contact-email') as HTMLAnchorElement).href='mailto:'+event.email+'?subject='+encodeURIComponent(alliance?'Alianza con RED Coffee Club':'Participación en AeroPress Margarita')+'&body='+encodeURIComponent(message);
   showModal(dialog,button);
