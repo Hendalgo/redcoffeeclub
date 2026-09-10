@@ -1,6 +1,68 @@
 ---
+import Analytics from '@vercel/analytics/astro';
 import '../styles/global.css';
-import '@fontsource/instrument-serif/latin-400.css';
+import '../styles/not-found.css';
 import '@fontsource/manrope/latin-400.css';
+import '@fontsource/manrope/latin-500.css';
+import '@fontsource/manrope/latin-600.css';
+const beans = [
+  { x: 27, y: 19, angle: -35 }, { x: 67, y: 16, angle: 24 },
+  { x: 14, y: 48, angle: -64 }, { x: 84, y: 43, angle: 48 },
+  { x: 29, y: 79, angle: 32 }, { x: 72, y: 77, angle: -22 },
+];
 ---
-<!doctype html><html lang="es"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width"/><meta name="robots" content="noindex"/><title>Volvamos al café | RED Coffee Club</title><link rel="icon" href="/images/flower.png"/></head><body><main style="margin:0;min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px;gap:32px"><img src="/images/logo.png" alt="RED Coffee Club" width="100" height="100" style="object-fit:contain"/><p class="eyebrow">404 · Esta página no está aquí</p><h1 style="font-size:clamp(48px,10vw,96px)">Volvamos a<br/>un buen café.</h1><a href="/" class="button">Volver al inicio <span aria-hidden="true"><svg class="inline-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></span></a></main></body></html>
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="robots" content="noindex"/>
+    <meta name="theme-color" content="#4b151a"/>
+    <meta name="description" content="Esta página no está aquí. Prepara una pequeña taza de café y vuelve a RED Coffee Club."/>
+    <title>Un café en el camino · 404 | RED Coffee Club</title>
+    <link rel="icon" type="image/webp" href="/optimized/flower-100.webp"/>
+    <Analytics />
+  </head>
+  <body class="not-found-page">
+    <a class="skip-link" href="#contenido">Saltar al contenido</a>
+    <header class="lost-header">
+      <a href="/" aria-label="RED Coffee Club, inicio"><img src="/optimized/logo-160.webp" alt="RED Coffee Club" width="80" height="56"/></a>
+      <span>Margarita, Venezuela</span>
+    </header>
+    <main id="contenido" class="lost-main">
+      <div class="lost-copy">
+        <p class="lost-code">404 <span>Fuera de la ruta</span></p>
+        <h1>Esta página<br/>se nos escapó.</h1>
+        <p>Pero todavía hay café. Haz una pausa, prepara una taza y volvamos a encontrarnos.</p>
+        <a href="/" class="button lost-home">Volver al inicio <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h16m-6-6 6 6-6 6"/></svg></a>
+      </div>
+      <section class="coffee-rescue" data-coffee-game aria-labelledby="coffee-game-title">
+        <div class="rescue-heading">
+          <h2 id="coffee-game-title">Un café en el camino.</h2>
+          <p data-game-instructions>Reúne los seis granos. Toca cada uno para llevarlo a la taza.</p>
+        </div>
+        <div class="rescue-table">
+          <div class="rescue-cup" data-game-cup role="img" aria-label="Taza vacía" style="--brew: 0">
+            <div class="cup-saucer"></div><div class="cup-handle"></div>
+            <div class="cup-rim"><div class="cup-coffee"><span class="coffee-crema"></span></div></div>
+            <div class="cup-steam" aria-hidden="true"><i></i><i></i><i></i></div>
+          </div>
+          {beans.map((bean, index) => <button type="button" class="rescue-bean" data-game-bean disabled aria-label={`Añadir grano ${index + 1} a la taza`} style={`left:${bean.x}%;top:${bean.y}%;--bean-angle:${bean.angle}deg`}>
+            <span class="bean-flight"><img src="/optimized/coffee-bean-192.webp" width="192" height="288" alt="" draggable="false"/></span>
+          </button>)}
+        </div>
+        <div class="rescue-footer">
+          <div class="rescue-progress" role="progressbar" aria-label="Granos reunidos" aria-valuemin="0" aria-valuemax="6" aria-valuenow="0" data-game-progress>
+            <span data-game-count>00</span><span class="rescue-total">/ 06</span>
+            <div class="rescue-dots" aria-hidden="true">{beans.map(() => <i></i>)}</div>
+          </div>
+          <button class="rescue-reset" type="button" data-game-reset disabled>Reiniciar <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10a9 9 0 1 1 2 8M3 4v6h6"/></svg></button>
+        </div>
+        <p class="rescue-status" role="status" data-game-status>Sin prisa. El café se disfruta.</p>
+        <noscript><p class="rescue-noscript">Activa JavaScript para preparar tu taza. También puedes volver al inicio.</p></noscript>
+      </section>
+    </main>
+    <footer class="lost-footer"><span>Café. Personas. Oportunidades.</span><a href="/#merch">La RED se lleva puesta <span aria-hidden="true">↗</span></a></footer>
+    <script src="../scripts/coffee-rescue.ts"></script>
+  </body>
+</html>

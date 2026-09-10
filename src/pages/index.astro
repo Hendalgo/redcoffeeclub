@@ -1,5 +1,6 @@
 ---
 import '../styles/site.css';
+import Analytics from '@vercel/analytics/astro';
 import BrewExperience from '../components/BrewExperience';
 import FooterBeans from '../components/FooterBeans.astro';
 import MerchRail from '../components/MerchRail.astro';
@@ -66,6 +67,7 @@ const facts = [
       window.dispatchEvent(new Event('red:site-ready'));
     }, 8000);
   </script>
+  <Analytics />
 </head>
 <body>
   <div class="preloader" aria-hidden="true">
@@ -238,7 +240,7 @@ const facts = [
     <p class="eyebrow">Café. Personas. Oportunidades.</p>
   </div>
   <OrnateDialog id="contact-dialog" labelledby="contact-title"><img {...imageProps('flower', '80px')} alt=""/><p class="eyebrow">Conecta con la RED</p><h2 id="contact-title">Tu próxima<br/><em>buena idea.</em></h2><p id="contact-description">Consulta al equipo cómo competir en AeroPress Margarita o participar en futuros eventos de RED.</p><div class="contact-options"><a id="contact-whatsapp" class="button button-burgundy" href={whatsapp('Hola, quisiera participar como competidor en AeroPress Margarita y conocer los próximos eventos de RED Coffee Club.')} target="_blank" rel="noopener noreferrer">Consultar por WhatsApp <svg><use href="#i-arrow"/></svg></a><a id="contact-email" class="text-link" href={'mailto:'+event.email}>Prefiero escribir un correo <svg><use href="#i-arrow"/></svg></a></div><p class="dialog-note">{event.statusNote} Abrir una consulta no reserva un cupo.</p></OrnateDialog>
-  <OrnateDialog id="privacy-dialog" labelledby="privacy-title"><p class="eyebrow">Privacidad</p><h2 id="privacy-title">Hablemos<br/><em>con confianza.</em></h2><p>Esta página no incluye formularios de registro, analítica ni cookies de seguimiento. Los controles de la experiencia 3D se procesan en tu navegador.</p><p>Al elegir WhatsApp o correo, sales hacia el servicio correspondiente y decides qué información enviar. Puedes contactar con RED Coffee Club en <a href={'mailto:'+event.email}>{event.email}</a>.</p></OrnateDialog>
+  <OrnateDialog id="privacy-dialog" labelledby="privacy-title"><p class="eyebrow">Privacidad</p><h2 id="privacy-title">Hablemos<br/><em>con confianza.</em></h2><p>Usamos Vercel Web Analytics para conocer las visitas y el uso del sitio mediante estadísticas agregadas, sin cookies de seguimiento. Esta página no incluye formularios de registro. Los controles de la experiencia y los juegos se procesan en tu navegador. <a href="https://vercel.com/docs/analytics/privacy-policy" target="_blank" rel="noopener noreferrer">Conoce cómo funciona la analítica de Vercel</a>.</p><p>Al elegir WhatsApp o correo, sales hacia el servicio correspondiente y decides qué información enviar. Puedes contactar con RED Coffee Club en <a href={'mailto:'+event.email}>{event.email}</a>.</p></OrnateDialog>
   <script src="../scripts/interactions.ts"></script>
   <script src="../scripts/motion.ts"></script>
   <script src="../scripts/startup.ts"></script>

@@ -17,6 +17,7 @@
     "@fontsource/instrument-serif": "^5.2.0",
     "@fontsource/manrope": "^5.2.0",
     "@react-three/fiber": "^9.3.0",
+    "@vercel/analytics": "^2.0.1",
     "astro": "^5.13.0",
     "gsap": "^3.13.0",
     "matter-js": "0.20.0",
