@@ -11,17 +11,29 @@ function mountMerch(root: HTMLElement) {
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   const mod = (value: number, length = merch.length) => ((value % length) + length) % length;
   const originals = Array.from(rack.querySelectorAll<HTMLElement>('[data-merch-item]'));
+  const backs = merch.map(() => false);
   // A fixed seven-item pool recycles only beyond the visible edges.
   const slots = Array.from({ length: 7 }, (_, i) => {
     const virtual = i - 3;
     const product = mod(virtual);
     const el = originals[product].cloneNode(true) as HTMLElement;
     el.setAttribute('aria-hidden', 'true');
-    return { el, garment: el.querySelector<HTMLElement>('.merch-garment')!, shirt: el.querySelector<HTMLImageElement>('.merch-shirt')!, print: el.querySelector<HTMLElement>('.merch-print')!, link: el.querySelector<HTMLAnchorElement>('[data-merch-product]')!, virtual, product, sway: createMerchSway(virtual) };
+    return {
+      el, garment: el.querySelector<HTMLElement>('.merch-garment')!,
+      turn: el.querySelector<HTMLElement>('.merch-turn')!,
+      front: el.querySelector<HTMLImageElement>('[data-merch-face="front"]')!,
+      back: el.querySelector<HTMLImageElement>('[data-merch-face="back"]')!,
+      flips: Array.from(el.querySelectorAll<HTMLButtonElement>('[data-merch-flip]')),
+      link: el.querySelector<HTMLAnchorElement>('[data-merch-product]')!,
+      animation: null as Animation | null,
+      turnFrom: 0, turnTo: 0,
+      virtual, product, sway: createMerchSway(virtual),
+    };
   });
   rack.replaceChildren(...slots.map(slot => slot.el));
   root.classList.add('merch-enhanced');
   root.querySelectorAll<HTMLElement>('[data-merch-controls]').forEach(el => el.hidden = false);
+  slots.forEach(slot => slot.flips.forEach(button => button.hidden = false));
 
   let position = 0, target = 0, velocity = 0, pitch = 1, shirtWidth = 1, rackWidth = 1;
   let frame = 0, lastTime = 0, carry = 0, timer = 0;
@@ -34,7 +46,7 @@ function mountMerch(root: HTMLElement) {
   function clearAutoplay() { window.clearTimeout(timer); timer = 0; }
   function scheduleAutoplay() {
     clearAutoplay();
-    if (!canAnimate() || paused || reduced.matches || hovered || focused || drag || frame) return;
+    if (!canAnimate() || paused || reduced.matches || hovered || focused || drag || frame || slots.some(slot => slot.animation)) return;
     timer = window.setTimeout(() => move(1, false), 5500);
   }
   function updatePlay() {
@@ -42,6 +54,50 @@ function mountMerch(root: HTMLElement) {
     play.setAttribute('aria-pressed', String(paused));
     play.setAttribute('aria-label', paused ? 'Activar carrusel automático' : 'Pausar carrusel automático');
   }
+  function updateSide(slot: typeof slots[number]) {
+    const back = backs[slot.product], item = merch[slot.product];
+    slot.el.dataset.side = back ? 'back' : 'front';
+    slot.front.parentElement!.setAttribute('aria-hidden', String(back));
+    slot.back.parentElement!.setAttribute('aria-hidden', String(!back));
+    const label = back ? 'Ver frente' : 'Ver espalda';
+    for (const button of slot.flips) {
+      const direction = Number(button.dataset.merchFlip) < 0 ? 'izquierda' : 'derecha';
+      button.title = `${label} · Girar a la ${direction}`;
+      button.setAttribute('aria-label', `${label} de ${item.name}, color ${item.color}, girando a la ${direction}`);
+    }
+  }
+  function currentTurn(slot: typeof slots[number]) {
+    const progress = slot.animation?.effect?.getComputedTiming().progress;
+    return progress == null ? (backs[slot.product] ? 180 : 0) : slot.turnFrom + (slot.turnTo - slot.turnFrom) * progress;
+  }
+  function flipProduct(selected: typeof slots[number], direction: number) {
+    clearAutoplay();
+    const product = selected.product;
+    const angle = currentTurn(selected);
+    // Choose the next half turn in the requested direction, without queuing
+    // extra revolutions on rapid clicks. Keep explicit angles so 180→360 and
+    // 0→-180 cannot be shortened/reversed by matrix interpolation.
+    const to = (direction > 0 ? Math.floor(angle / 180 + .00001) + 1 : Math.ceil(angle / 180 - .00001) - 1) * 180;
+    const matching = slots.filter(candidate => candidate.product === product).map(slot => ({ slot, from: currentTurn(slot) }));
+    backs[product] = Math.abs(Math.round(to / 180) % 2) === 1;
+    // Remember the chosen face per model, even when an offscreen slot is reused.
+    for (const { slot, from } of matching) {
+      slot.animation?.cancel();
+      slot.animation = null;
+      slot.turnFrom = from;
+      slot.turnTo = to;
+      updateSide(slot);
+      if (reduced.matches) continue;
+      const animation = slot.turn.animate([
+        { transform: `rotateY(${from}deg)` },
+        { transform: `rotateY(${to}deg)` },
+      ], { duration: 850, easing: 'cubic-bezier(.32,.72,0,1)' });
+      slot.animation = animation;
+      animation.onfinish = () => { slot.animation = null; scheduleAutoplay(); };
+    }
+    scheduleAutoplay();
+  }
+  slots.forEach(slot => slot.flips.forEach(button => button.addEventListener('click', () => flipProduct(slot, Number(button.dataset.merchFlip)))));
   function render() {
     for (const slot of slots) {
       while (slot.virtual - position > 3.5) slot.virtual -= slots.length;
@@ -50,9 +106,13 @@ function mountMerch(root: HTMLElement) {
       if (product !== slot.product) {
         slot.product = product;
         slot.sway = createMerchSway(slot.virtual);
-        slot.shirt.src = merch[product].image;
-        slot.shirt.alt = `Franela ${merch[product].color.toLowerCase()}, concepto provisional de RED Coffee Club`;
-        slot.print.classList.toggle('merch-print-dark', merch[product].ink === 'dark');
+        slot.animation?.cancel();
+        slot.animation = null;
+        slot.front.src = merch[product].front;
+        slot.back.src = merch[product].back;
+        slot.front.alt = `Franela ${merch[product].name}, color ${merch[product].color}, vista frontal`;
+        slot.back.alt = `Franela ${merch[product].name}, color ${merch[product].color}, vista trasera`;
+        updateSide(slot);
         slot.el.dataset.product = String(product);
         slot.link.href = merchInquiry(merch[product]);
         slot.link.dataset.ink = merch[product].ink;
@@ -66,6 +126,7 @@ function mountMerch(root: HTMLElement) {
       slot.el.dataset.active = String(Math.abs(distance) < .5);
       slot.el.setAttribute('aria-hidden', String(Math.abs(distance * pitch) > (rackWidth + shirtWidth) / 2));
       slot.link.tabIndex = Math.abs(distance) < .5 ? 0 : -1;
+      slot.flips.forEach(button => button.tabIndex = Math.abs(distance) < .5 ? 0 : -1);
     }
     const current = mod(Math.round(position));
     if (current !== active) {
@@ -166,13 +227,15 @@ function mountMerch(root: HTMLElement) {
   rack.addEventListener('selectstart', event => event.preventDefault());
   // Releasing a drag over a product must not turn it into a purchase click.
   rack.addEventListener('click', event => {
-    if (!suppressProductClick || event.detail === 0 || !(event.target as Element).closest('[data-merch-product]')) return;
+    if (!suppressProductClick || event.detail === 0 || !(event.target as Element).closest('[data-merch-product], [data-merch-flip]')) return;
     event.preventDefault(); event.stopPropagation(); suppressProductClick = false;
   }, { capture: true });
   rack.addEventListener('blur', () => { delete rack.dataset.pointerFocus; });
   rack.addEventListener('pointerdown', event => {
     if (!event.isPrimary || event.button !== 0) return;
     suppressProductClick = false;
+    // The turn control has its own gesture; pressing it must not move the rail.
+    if ((event.target as Element).closest('[data-merch-flip]')) return;
     rack.dataset.pointerFocus = 'true';
     if (event.pointerType === 'mouse') {
       event.preventDefault();
@@ -209,6 +272,7 @@ function mountMerch(root: HTMLElement) {
     else { wake(); scheduleAutoplay(); }
   });
   reduced.addEventListener('change', () => {
+    for (const slot of slots) { slot.animation?.cancel(); slot.animation = null; }
     paused = reduced.matches; updatePlay(); endDrag(undefined, true); stop(); settle();
     scheduleAutoplay();
   });
