@@ -26,6 +26,7 @@ function mountMerch(root: HTMLElement) {
       flips: Array.from(el.querySelectorAll<HTMLButtonElement>('[data-merch-flip]')),
       link: el.querySelector<HTMLAnchorElement>('[data-merch-product]')!,
       animation: null as Animation | null,
+      automaticTurn: false,
       turnFrom: 0, turnTo: 0,
       virtual, product, sway: createMerchSway(virtual),
     };
@@ -39,15 +40,36 @@ function mountMerch(root: HTMLElement) {
   let frame = 0, lastTime = 0, carry = 0, timer = 0;
   let visible = false, hovered = false, focused = false, paused = reduced.matches;
   let active = -1;
+  let autoplayVisit = 0, autoplayTurned = false;
   let suppressProductClick = false;
   let drag: { id: number; x: number; y: number; start: number; horizontal: boolean } | null = null;
   const canAnimate = () => visible && !document.hidden;
 
-  function clearAutoplay() { window.clearTimeout(timer); timer = 0; }
+  const canAutoplay = () => canAnimate() && !paused && !reduced.matches && !hovered && !focused && !drag;
+  function clearAutoplay() {
+    window.clearTimeout(timer); timer = 0;
+    for (const slot of slots) {
+      if (slot.automaticTurn && slot.animation?.playState === 'running') slot.animation.pause();
+    }
+  }
   function scheduleAutoplay() {
     clearAutoplay();
-    if (!canAnimate() || paused || reduced.matches || hovered || focused || drag || frame || slots.some(slot => slot.animation)) return;
-    timer = window.setTimeout(() => move(1, false), 5500);
+    if (!canAutoplay() || frame) return;
+    for (const slot of slots) {
+      if (slot.automaticTurn && slot.animation?.playState === 'paused') slot.animation.play();
+    }
+    if (slots.some(slot => slot.animation)) return;
+    // Two out of every three stops reveal the other face. Each visit gets at
+    // most one automatic turn, then time to inspect it before the rail moves.
+    const reveal = !autoplayTurned && autoplayVisit % 3 !== 0;
+    const delay = reveal ? 2200 + (autoplayVisit % 3) * 350 : autoplayTurned ? 3400 : 5500;
+    timer = window.setTimeout(() => {
+      timer = 0;
+      if (!canAutoplay() || frame) return;
+      const selected = slots.find(slot => slot.virtual === Math.round(position));
+      if (reveal && selected) flipProduct(selected, autoplayVisit % 2 ? 1 : -1, true);
+      else move(1, false);
+    }, delay);
   }
   function updatePlay() {
     play.hidden = reduced.matches;
@@ -70,8 +92,9 @@ function mountMerch(root: HTMLElement) {
     const progress = slot.animation?.effect?.getComputedTiming().progress;
     return progress == null ? (backs[slot.product] ? 180 : 0) : slot.turnFrom + (slot.turnTo - slot.turnFrom) * progress;
   }
-  function flipProduct(selected: typeof slots[number], direction: number) {
+  function flipProduct(selected: typeof slots[number], direction: number, automatic = false) {
     clearAutoplay();
+    autoplayTurned = true;
     const product = selected.product;
     const angle = currentTurn(selected);
     // Choose the next half turn in the requested direction, without queuing
@@ -84,6 +107,7 @@ function mountMerch(root: HTMLElement) {
     for (const { slot, from } of matching) {
       slot.animation?.cancel();
       slot.animation = null;
+      slot.automaticTurn = automatic;
       slot.turnFrom = from;
       slot.turnTo = to;
       updateSide(slot);
@@ -91,9 +115,9 @@ function mountMerch(root: HTMLElement) {
       const animation = slot.turn.animate([
         { transform: `rotateY(${from}deg)` },
         { transform: `rotateY(${to}deg)` },
-      ], { duration: 850, easing: 'cubic-bezier(.32,.72,0,1)' });
+      ], { duration: automatic ? 950 + (product % 3) * 110 : 850, easing: 'cubic-bezier(.32,.72,0,1)' });
       slot.animation = animation;
-      animation.onfinish = () => { slot.animation = null; scheduleAutoplay(); };
+      animation.onfinish = () => { slot.animation = null; slot.automaticTurn = false; scheduleAutoplay(); };
     }
     scheduleAutoplay();
   }
@@ -108,6 +132,7 @@ function mountMerch(root: HTMLElement) {
         slot.sway = createMerchSway(slot.virtual);
         slot.animation?.cancel();
         slot.animation = null;
+        slot.automaticTurn = false;
         slot.front.src = merch[product].front;
         slot.back.src = merch[product].back;
         slot.front.alt = `Franela ${merch[product].name}, color ${merch[product].color}, vista frontal`;
@@ -131,6 +156,8 @@ function mountMerch(root: HTMLElement) {
     const current = mod(Math.round(position));
     if (current !== active) {
       active = current;
+      autoplayVisit += 1;
+      autoplayTurned = false;
       root.querySelector<HTMLElement>('[data-merch-name]')!.textContent = merch[current].name;
       root.querySelector<HTMLElement>('[data-merch-color]')!.textContent = merch[current].color;
       root.querySelector<HTMLElement>('[data-merch-count]')!.textContent = String(current + 1).padStart(2, '0');
@@ -272,7 +299,7 @@ function mountMerch(root: HTMLElement) {
     else { wake(); scheduleAutoplay(); }
   });
   reduced.addEventListener('change', () => {
-    for (const slot of slots) { slot.animation?.cancel(); slot.animation = null; }
+    for (const slot of slots) { slot.animation?.cancel(); slot.animation = null; slot.automaticTurn = false; }
     paused = reduced.matches; updatePlay(); endDrag(undefined, true); stop(); settle();
     scheduleAutoplay();
   });

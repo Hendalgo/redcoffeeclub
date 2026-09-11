@@ -24,8 +24,7 @@
   letter-spacing: .12em;
 }
 
-.territory-credit,
-.hero-image-credit {
+.territory-credit {
   font-size: var(--text-note);
   line-height: 1.25rem;
   letter-spacing: 0;
@@ -34,7 +33,6 @@
   text-wrap: pretty;
 }
 .territory-credit { margin-top: 1.5rem; }
-.hero-image-credit { padding: .25rem .5rem; background: #171310e6; }
 
 .event-intro,
 .territory-copy > p:not(.eyebrow),

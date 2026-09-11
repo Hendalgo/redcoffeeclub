@@ -58,7 +58,7 @@ function buildMotion() {
     const mobile = !!context.conditions?.mobile || !!context.conditions?.compact;
     experience.classList.add('is-enhanced');
     const driver = { progress: 0 };
-    const ui = '.hero-content,.hero-handwriting,.hero-scroll,.hero-values,.hero-image-credit';
+    const ui = '.hero-content,.hero-handwriting,.hero-scroll,.hero-values';
     const journey = gsap.timeline({ paused: true, defaults: { ease: 'none' } });
     const scrollDriver = { progress: 0 };
     const renderJourney = (rawProgress: number) => {
