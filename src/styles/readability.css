@@ -169,7 +169,7 @@
   .hero-date, .experience.is-enhanced .hero-date { max-width: 285px; align-items: flex-start; }
   .hero-date svg { flex-shrink: 0; margin-top: 2px; }
   .program-list article { grid-template-columns: 64px minmax(0, 1fr); }
-  .program-note { padding-left: 0; }
+  .program-note { display: none; }
   .footer-main { gap: 24px; }
   .footer-invitation { min-width: 0; flex-basis: 100%; }
   .footer-invitation > a { max-width: 100%; overflow-wrap: anywhere; }
